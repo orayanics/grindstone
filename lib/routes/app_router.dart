@@ -2,11 +2,15 @@ import 'package:go_router/go_router.dart';
 import 'package:gym_tracker_flutter/exports/screens.dart';
 import 'package:gym_tracker_flutter/exports/layouts.dart';
 
+
 // Declare public routes here
 final baseRoute = GoRoute(path: '/', builder: (context, state) => HomeView());
 
 final registerRoute =
     GoRoute(path: '/register', builder: (context, state) => RegisterView());
+
+final loginRoute =
+    GoRoute(path: '/login', builder: (context, state) => LoginView());
 
 // Declare private routes here
 final profileRoute =
@@ -22,6 +26,7 @@ final privateRoutes = ShellRoute(
 final GoRouter appRouter = GoRouter(initialLocation: '/', routes: [
   baseRoute,
   registerRoute,
+  loginRoute,
   privateRoutes,
   profileRoute,
 ]);
