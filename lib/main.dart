@@ -1,10 +1,10 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
-  import 'package:gym_tracker_flutter/routes/app_router.dart';
+  import 'package:grindstone/routes/app_router.dart';
   import 'package:firebase_core/firebase_core.dart';
   import 'package:provider/provider.dart';
-  import 'package:gym_tracker_flutter/services/auth_service.dart';
-  import 'firebase_options.dart';
+  import 'package:grindstone/services/auth_service.dart';
+  import 'package:grindstone/config/firebase_options.dart';
 
   void main() async {
     await dotenv.load(fileName: ".env");
