@@ -1,3 +1,3 @@
-# gym_tracker_flutter
+# grindstone
 
 A new Flutter project.

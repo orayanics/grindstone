@@ -1,4 +1,4 @@
-package com.example.gym_tracker_flutter
+package com.example.grindstone
 
 import io.flutter.embedding.android.FlutterActivity
 
