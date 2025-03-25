@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
-import 'package:grindstone/exports/screens.dart';
-import 'package:grindstone/exports/layouts.dart';
+import 'package:grindstone/core/exports/screens.dart';
+import 'package:grindstone/core/exports/layouts.dart';
 
 // Declare public routes here
 final baseRoute = GoRoute(path: '/', builder: (context, state) => HomeView());
