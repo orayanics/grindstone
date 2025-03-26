@@ -6,6 +6,9 @@ import 'package:grindstone/core/routes/routes.dart';
 
 class AuthService extends ChangeNotifier{
 
+  bool get isSignedIn => FirebaseAuth.instance.currentUser != null;
+
+
   Future<void> signup({
     required String email,
     required String password,
@@ -56,8 +59,10 @@ class AuthService extends ChangeNotifier{
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
-      );
 
+
+      );
+      notifyListeners();
       Fluttertoast.showToast(
         msg: 'Login successful!',
         toastLength: Toast.LENGTH_LONG,
@@ -97,5 +102,11 @@ class AuthService extends ChangeNotifier{
         fontSize: 16.0,
       );
     }
+  }
+
+  Future<void> signout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    notifyListeners();
+    context.go(AppRoutes.home);
   }
 }
