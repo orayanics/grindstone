@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class PrivateLayout extends StatelessWidget {
-  const PrivateLayout({super.key, required this.child});
+class PublicLayout extends StatelessWidget {
+  const PublicLayout({super.key, required this.child});
 
   final Widget child;
 
@@ -9,7 +9,7 @@ class PrivateLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Private Layout'),
+        title: const Text('Public Layout'),
       ),
       body: child,
     );

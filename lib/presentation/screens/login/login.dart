@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 
-class RegisterView extends StatelessWidget {
+class LoginView extends StatelessWidget {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  RegisterView({super.key});
+ LoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Register')),
+      appBar: AppBar(title: Text('Login')),
       body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -30,14 +30,14 @@ class RegisterView extends StatelessWidget {
               ElevatedButton(
                 onPressed: () async {
                   final authService = Provider.of<AuthService>(context, listen: false);
-                  await authService.signup(
+                  await authService.signin(
                     email: _emailController.text,
                     password: _passwordController.text,
                     context: context,
                   );
                 },
 
-                child: const Text('Register'),
+                child: const Text('Login'),
               )
             ],
           )
