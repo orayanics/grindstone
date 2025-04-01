@@ -1,32 +1,44 @@
 import 'package:go_router/go_router.dart';
-import 'package:grindstone/exports/screens.dart';
-import 'package:grindstone/exports/layouts.dart';
+import 'package:grindstone/core/exports/screens.dart';
+import 'package:grindstone/core/exports/layouts.dart';
+import 'package:grindstone/core/services/auth_service.dart';
+import 'package:provider/provider.dart';
+
 
 // Declare public routes here
 final baseRoute = GoRoute(path: '/', builder: (context, state) => HomeView());
 
+final publicRoutes = ShellRoute(
+    builder: (context, state, child) => PublicLayout(child: child),
+  routes: [
+    baseRoute,
+    registerRoute,
+    loginRoute,
+  ],
+  redirect: (context, state){
+    final authService = Provider.of<AuthService>(context, listen: false);
+    if (authService.isSignedIn) {
+      return '/profile';
+    }
+    return null;
+  }
+);
+
 final registerRoute =
     GoRoute(path: '/register', builder: (context, state) => RegisterView());
+
+final loginRoute =
+    GoRoute(path: '/login', builder: (context, state) => LoginView());
 
 // Declare private routes here
 final profileRoute =
     GoRoute(path: '/profile', builder: (context, state) => ProfileView());
 
-final createProgramRoute =
-    GoRoute(path: '/create-program', builder: (context, state) => CreateProgramView(userId: '',));
-
 // Private routes
 final privateRoutes = ShellRoute(
     builder: (context, state, child) => PrivateLayout(child: child),
     routes: [
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      GoRoute(path: '/profile', builder: (context, state) => ProfileView())
-    ]);
-=======
-=======
->>>>>>> Stashed changes
-      profileRoute,createProgramRoute,
+      profileRoute,
     ],
   redirect: (context,state) {
       final authService = Provider.of<AuthService>(context, listen: false);
@@ -37,14 +49,14 @@ final privateRoutes = ShellRoute(
       return null;
   }
 );
->>>>>>> Stashed changes
 
-final GoRouter appRouter = GoRouter(initialLocation: '/', routes: [
-  baseRoute,
-  registerRoute,
-  privateRoutes,
-  profileRoute,
-]);
+final GoRouter appRouter = GoRouter(
+initialLocation: '/',
+routes: [
+publicRoutes,
+privateRoutes,
+],
+);
 
 // Also declare your routes in routes.dart
 

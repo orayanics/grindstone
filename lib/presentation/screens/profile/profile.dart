@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:grindstone/routes/routes.dart';
+import 'package:grindstone/core/routes/routes.dart';
+import 'package:grindstone/core/services/auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:grindstone/core/services/user_session.dart';
 
 class ProfileView extends StatelessWidget {
-  const ProfileView({Key? key}) : super(key: key);
+  const ProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
 
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final userId = authService.currentUser?.uid ?? '';
+
+    final userId = context.watch<UserProvider>().userId;
+    final authService = context.read<AuthService>();
 
     return Scaffold(
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      body: FloatingActionButton(
-          onPressed: () => context.go(AppRoutes.home),
-          child: Text('Go to Home')),
-=======
-=======
->>>>>>> Stashed changes
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -36,10 +32,6 @@ class ProfileView extends StatelessWidget {
           ),
         ],
       ),
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     );
   }
               }

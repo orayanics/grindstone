@@ -121,7 +121,9 @@ class _CreateProgramViewState extends State<CreateProgramView> {
                     );
                     await _firestoreService.createExerciseProgram(program);
                     Navigator.pop(context);
-                    context.go(AppRoutes.profile);
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      context.go(AppRoutes.profile);
+                    });
                   }
                 },
                 child: Text('Create Program'),
