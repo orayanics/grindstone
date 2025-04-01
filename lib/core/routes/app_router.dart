@@ -20,9 +20,12 @@ final privateRoutes = ShellRoute(
     builder: (context, state, child) => PrivateLayout(child: child),
     routes: [
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       GoRoute(path: '/profile', builder: (context, state) => ProfileView())
     ]);
 =======
+=======
+>>>>>>> Stashed changes
       profileRoute,createProgramRoute,
     ],
   redirect: (context,state) {

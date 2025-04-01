@@ -13,10 +13,13 @@ class ProfileView extends StatelessWidget {
 
     return Scaffold(
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       body: FloatingActionButton(
           onPressed: () => context.go(AppRoutes.home),
           child: Text('Go to Home')),
 =======
+=======
+>>>>>>> Stashed changes
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -33,6 +36,9 @@ class ProfileView extends StatelessWidget {
           ),
         ],
       ),
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     );
   }
