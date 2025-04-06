@@ -3,6 +3,9 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String profile = '/profile';
+  static const String create_program = '/create-program';
+  static const String programs = '/programs';
+  static const String program = '/program-details/:programId';
 }
 
 // To call your routes:

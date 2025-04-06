@@ -7,7 +7,8 @@ class LoginView extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
- LoginView({super.key});
+  LoginView({super.key});
+
 
   @override
   Widget build(BuildContext context) {

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
   import 'package:grindstone/core/routes/app_router.dart';
   import 'package:firebase_core/firebase_core.dart';
   import 'package:grindstone/core/config/firebase_options.dart';
+import 'package:grindstone/core/services/user_session.dart';
+
 import 'package:provider/provider.dart';
 
 import 'core/services/auth_service.dart';
@@ -27,6 +29,11 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider<AuthService>(
           create: (_) => AuthService(),
         ),
+
+        ChangeNotifierProvider<UserProvider>(
+          create: (_) => UserProvider(),
+        ),
+
       ],
       child: MaterialApp.router(
         routerConfig: appRouter,
