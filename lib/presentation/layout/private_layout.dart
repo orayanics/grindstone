@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class PrivateLayout extends StatelessWidget {
-  const PrivateLayout({Key? key, required this.child}) : super(key: key);
+  const PrivateLayout({super.key, required this.child});
 
   final Widget child;
 

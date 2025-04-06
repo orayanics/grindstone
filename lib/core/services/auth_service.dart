@@ -17,6 +17,7 @@ class AuthService extends ChangeNotifier {
     required BuildContext context,
   }) async {
     try {
+
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email,
           password: password
@@ -40,6 +41,7 @@ class AuthService extends ChangeNotifier {
           textColor: Colors.white,
           fontSize: 16.0
       );
+
     } catch (e) {
       Fluttertoast.showToast(
         msg: 'An unexpected error occurred. Please try again.',

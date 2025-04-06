@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/routes/routes.dart';
 
-class HomeView extends StatelessWidget {
-  const HomeView({super.key});
+
+  class HomeView extends StatelessWidget {
+    const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {

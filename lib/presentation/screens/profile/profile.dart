@@ -5,6 +5,7 @@ import 'package:grindstone/core/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/user_session.dart';
 
+
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
 
