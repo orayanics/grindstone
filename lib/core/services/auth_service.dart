@@ -1,13 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
+import 'package:grindstone/core/exports/components.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/services/user_session.dart';
 
 class AuthService extends ChangeNotifier {
-
   bool get isSignedIn => FirebaseAuth.instance.currentUser != null;
   User? get currentUser => FirebaseAuth.instance.currentUser;
 
@@ -16,41 +15,26 @@ class AuthService extends ChangeNotifier {
     required String password,
     required BuildContext context,
   }) async {
-    try {
+    final userProvider = context.read<UserProvider>();
+    final navigator = GoRouter.of(context);
 
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email,
-          password: password
-      );
+    try {
+      await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       await Future.delayed(const Duration(seconds: 3));
-      context.read<UserProvider>().setUserId(FirebaseAuth.instance.currentUser!.uid);
-      context.go(AppRoutes.profile);
-    } on FirebaseAuthException catch (e) {
-      String message = '';
-      if (e.code == 'weak-password') {
-        message = 'The password provided is too weak.';
-      } else if (e.code == 'email-already-in-use') {
-        message = 'The account already exists for that email.';
-      }
-      Fluttertoast.showToast(
-          msg: message,
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.SNACKBAR,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
 
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (userId != null) {
+        userProvider.setUserId(userId);
+        SuccessToast.show("Login Successful");
+        navigator.go(AppRoutes.profile);
+      }
+    } on FirebaseAuthException catch (e) {
+      FailToast.show(e.message.toString());
     } catch (e) {
-      Fluttertoast.showToast(
-        msg: 'An unexpected error occurred. Please try again.',
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.SNACKBAR,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
+      FailToast.show(e.toString());
     }
   }
 
@@ -59,57 +43,45 @@ class AuthService extends ChangeNotifier {
     required String password,
     required BuildContext context,
   }) async {
+    final userProvider = context.read<UserProvider>();
+    final navigator = GoRouter.of(context);
+
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      context.read<UserProvider>().setUserId(FirebaseAuth.instance.currentUser!.uid);
+
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (userId != null) {
+        userProvider.setUserId(userId);
+        notifyListeners();
+        SuccessToast.show("Login Successful");
+        navigator.go(AppRoutes.profile);
+      }
+    } on FirebaseAuthException catch (e) {
+      FailToast.show(e.message.toString());
+    } catch (e) {
+      FailToast.show(e.toString());
+    }
+  }
+
+  Future<void> signout(BuildContext context) async {
+    final userProvider = context.read<UserProvider>();
+    final navigator = GoRouter.of(context);
+
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      userProvider.clearUserId();
       notifyListeners();
-      Fluttertoast.showToast(
-                  msg: 'Login successful!',
-                  toastLength: Toast.LENGTH_LONG,
-                  gravity: ToastGravity.SNACKBAR,
-                  backgroundColor: Colors.green,
-                  textColor: Colors.white,
-                  fontSize: 16.0,
-                );
-
-                context.go(AppRoutes.profile);
-              } on FirebaseAuthException catch (e) {
-                String message = 'An error occurred';
-                if (e.code == 'invalid-email') {
-                  message = 'No user found with credentials.';
-                } else if (e.code == 'invalid-credential') {
-                  message = 'Wrong password provided for that user.';
-                } else {
-                  message = 'Error: ${e.message}';
-                }
-
-                Fluttertoast.showToast(
-                  msg: message,
-                  toastLength: Toast.LENGTH_LONG,
-                  gravity: ToastGravity.SNACKBAR,
-                  backgroundColor: Colors.red,
-                  textColor: Colors.white,
-                  fontSize: 16.0,
-                );
-              } catch (e) {
-                Fluttertoast.showToast(
-                  msg: 'An unexpected error occurred. Please try again.',
-                  toastLength: Toast.LENGTH_LONG,
-                  gravity: ToastGravity.SNACKBAR,
-                  backgroundColor: Colors.red,
-                  textColor: Colors.white,
-                  fontSize: 16.0,
-                );
-              }
-            }
-
-            Future<void> signout(BuildContext context) async {
-              await FirebaseAuth.instance.signOut();
-              context.read<UserProvider>().clearUserId();
-              notifyListeners();
-              context.go(AppRoutes.home);
-            }
-          }
+      SuccessToast.show("Logout Successful");
+      navigator.go(AppRoutes.home);
+    } on FirebaseAuthException catch (e) {
+      FailToast.show(e.message.toString());
+    } catch (e) {
+      FailToast.show(e.toString());
+    }
+  }
+}

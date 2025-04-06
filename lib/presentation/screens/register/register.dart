@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 
 class RegisterView extends StatelessWidget {
-
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -29,19 +28,18 @@ class RegisterView extends StatelessWidget {
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () async {
-                  final authService = Provider.of<AuthService>(context, listen: false);
+                  final authService =
+                      Provider.of<AuthService>(context, listen: false);
                   await authService.signup(
                     email: _emailController.text,
                     password: _passwordController.text,
                     context: context,
                   );
                 },
-
                 child: const Text('Register'),
               )
             ],
-          )
-      ),
+          )),
     );
   }
 }

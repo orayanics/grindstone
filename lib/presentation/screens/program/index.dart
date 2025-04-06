@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:grindstone/core/model/exerciseProgram.dart';
+import 'package:grindstone/core/model/exercise_program.dart';
 import 'package:grindstone/core/services/program_crud_services.dart';
-import 'package:grindstone/core/services/user_session.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
 class ProgramIndexView extends StatefulWidget {
+  const ProgramIndexView({super.key});
+
   @override
-  _ProgramIndexViewState createState() => _ProgramIndexViewState();
+  State<ProgramIndexView> createState() => _ProgramIndexViewState();
 }
 
 class _ProgramIndexViewState extends State<ProgramIndexView> {
-  final FirestoreService _firestoreService = FirestoreService();
   late Future<List<ExerciseProgram>> _exercisesFuture;
 
   @override
@@ -21,8 +21,8 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
   }
 
   void _loadExercises() {
-    final userId = context.read<UserProvider>().userId;
-    _exercisesFuture = _firestoreService.fetchExercises(userId!);
+    final apiCalls = Provider.of<ApiCalls>(context, listen: false);
+    _exercisesFuture = apiCalls.fetchUserPrograms();
   }
 
   @override

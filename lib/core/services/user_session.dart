@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class UserProvider with ChangeNotifier {
   String? _userId;
@@ -14,5 +14,15 @@ class UserProvider with ChangeNotifier {
   void clearUserId() {
     _userId = null;
     notifyListeners();
+  }
+
+  String getUid() {
+    String? firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (firebaseUid != null) {
+      setUserId(firebaseUid);
+    }
+
+    return firebaseUid ?? '';
   }
 }
