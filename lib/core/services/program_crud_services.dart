@@ -11,4 +11,24 @@ class FirestoreService {
       rethrow;
     }
   }
+
+  Future<List<ExerciseProgram>> fetchExercises(String userId) async{
+    try{
+      final snapshot = await _db.collection('exercisePrograms').where('userId', isEqualTo:userId).get();
+      return snapshot.docs.map((doc) => ExerciseProgram.fromMap(doc.data())).toList();
+
+  }
+  catch(e){
+    rethrow;
+    }
+}
+
+  Future<void> deleteExerciseProgram(String programId) async {
+    try {
+      await _db.collection('exercisePrograms').doc(programId).delete();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }

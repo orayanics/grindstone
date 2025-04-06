@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:grindstone/core/services/program_crud_services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/routes/routes.dart';
+import 'package:grindstone/core/api/exercise_api.dart';
 
 class CreateProgramView extends StatefulWidget {
   final String userId;
@@ -26,17 +27,13 @@ class _CreateProgramViewState extends State<CreateProgramView> {
   String? _selectedDay;
 
   Future<void> _fetchExercises(String query) async {
-    final response = await http.get(Uri.parse('https://exercisedb-api.vercel.app/api/v1/exercises/autocomplete?search=$query'));
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
+    try {
+      final results = await ExerciseApi.fetchExercises(query);
       setState(() {
-        _searchResults = (data['data'] as List).map((exercise) => {
-          'exerciseId': exercise['exerciseId'].toString(),
-          'name': exercise['name'].toString(),
-        }).toList();
+        _searchResults = results;
       });
-    } else {
-      throw Exception('Failed to load exercises');
+    } catch (e) {
+      // Handle error
     }
   }
 

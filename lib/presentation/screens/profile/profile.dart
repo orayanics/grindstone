@@ -30,6 +30,11 @@ class ProfileView extends StatelessWidget {
             onPressed: () => context.go('/create-program', extra: userId),
             child: Text('Create a Program'),
           ),
+          SizedBox(height: 16,),
+          ElevatedButton(
+            onPressed: () => context.go('/programs'),
+            child: Text('View Programs'),
+          ),
         ],
       ),
     );

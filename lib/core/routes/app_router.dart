@@ -34,11 +34,31 @@ final loginRoute =
 final profileRoute =
     GoRoute(path: '/profile', builder: (context, state) => ProfileView());
 
+final createProgramRoute = GoRoute(path: '/create-program', builder: (context, state) {
+  final userId = state.extra as String;
+  return CreateProgramView(userId: userId);
+});
+
+final indexProgramRoute =
+    GoRoute(path: '/programs', builder: (context, state) => ProgramIndexView());
+
+final programDetailsRoute = GoRoute(
+  path: '/program-details/:programId',
+  builder: (context, state) {
+    final exerciseIds = state.extra as List<String>;
+    final programId = state.pathParameters['programId'];
+    return ProgramDetailsView(exerciseIds: exerciseIds, programId: programId!);
+  },
+);
+
 // Private routes
 final privateRoutes = ShellRoute(
     builder: (context, state, child) => PrivateLayout(child: child),
     routes: [
       profileRoute,
+      createProgramRoute,
+      indexProgramRoute,
+      programDetailsRoute,
     ],
   redirect: (context,state) {
       final authService = Provider.of<AuthService>(context, listen: false);

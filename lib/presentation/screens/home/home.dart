@@ -10,8 +10,8 @@ class HomeView extends StatelessWidget {
     return Scaffold(
       body: FloatingActionButton(
           onPressed: // go to profile
-              () => context.go(AppRoutes.profile),
-          child: const Text('Go to Profile')),
+              () => context.go(AppRoutes.login),
+          child: const Text('Login')),
     );
   }
 }
