@@ -1,22 +1,28 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ExerciseApi {
   static Future<List<Map<String, String>>> fetchExercises(String query) async {
-    final response = await http.get(Uri.parse('https://exercisedb-api.vercel.app/api/v1/exercises/autocomplete?search=$query'));
+    final response = await http.get(Uri.parse(
+        '${dotenv.env['EXERCISE_API'] ?? ''}/exercises/autocomplete?search=$query'));
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-      return (data['data'] as List).map((exercise) => {
-        'exerciseId': exercise['exerciseId'].toString(),
-        'name': exercise['name'].toString(),
-      }).toList();
+      return (data['data'] as List)
+          .map((exercise) => {
+                'exerciseId': exercise['exerciseId'].toString(),
+                'name': exercise['name'].toString(),
+              })
+          .toList();
     } else {
       throw Exception('Failed to load exercises');
     }
   }
 
-  static Future<Map<String, String>> fetchExerciseById(String exerciseId) async {
-    final response = await http.get(Uri.parse('https://exercisedb-api.vercel.app/api/v1/exercises/$exerciseId'));
+  static Future<Map<String, String>> fetchExerciseById(
+      String exerciseId) async {
+    final response = await http.get(
+        Uri.parse('${dotenv.env['EXERCISE_API'] ?? ''}/exercises/$exerciseId'));
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body)['data'];
       return {

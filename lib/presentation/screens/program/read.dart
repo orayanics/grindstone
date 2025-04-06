@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:grindstone/core/api/exercise_api.dart';
+import 'package:grindstone/core/exports/components.dart';
 import 'package:grindstone/core/services/program_crud_services.dart';
 
 class ProgramDetailsView extends StatefulWidget {
   final List<String> exerciseIds;
   final String programId;
 
-  ProgramDetailsView({required this.exerciseIds, required this.programId});
+  const ProgramDetailsView(
+      {super.key, required this.exerciseIds, required this.programId});
 
   @override
-  _ProgramDetailsViewState createState() => _ProgramDetailsViewState();
+  State<ProgramDetailsView> createState() {
+    return _ProgramDetailsViewState();
+  }
 }
 
 class _ProgramDetailsViewState extends State<ProgramDetailsView> {
@@ -55,70 +59,69 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
     if (confirmed == true) {
       try {
         await _firestoreService.deleteExerciseProgram(widget.programId);
-        Navigator.of(context).pop(); // Go back to the previous screen after deletion
+
+        if (mounted) {
+          Navigator.pop(context);
+        }
       } catch (e) {
-        // Handle error
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete program')));
+        FailToast.show('Failed to delete program');
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Program Details')),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: FutureBuilder<List<Map<String, String>>>(
-              future: _exercisesFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No exercises found'));
-                } else {
-                  final exercises = snapshot.data!;
-                  return ListView.builder(
-                    itemCount: exercises.length,
-                    itemBuilder: (context, index) {
-                      final exercise = exercises[index];
-                      return Card(
-                        margin: EdgeInsets.all(8.0),
-                        child: ListTile(
-                          title: Text(exercise['name']!),
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Implement update logic here
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: FutureBuilder<List<Map<String, String>>>(
+            future: _exercisesFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No exercises found'));
+              } else {
+                final exercises = snapshot.data!;
+                return ListView.builder(
+                  itemCount: exercises.length,
+                  itemBuilder: (context, index) {
+                    final exercise = exercises[index];
+                    return Card(
+                      margin: EdgeInsets.all(8.0),
+                      child: ListTile(
+                        title: Text(exercise['name']!),
+                      ),
+                    );
                   },
-                  child: Text('Update'),
-                ),
-                ElevatedButton(
-                  onPressed: _deleteProgram,
-                  child: Text('Delete'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                ),
-              ],
-            ),
+                );
+              }
+            },
           ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  // Implement update logic here
+                },
+                child: Text('Update'),
+              ),
+              ElevatedButton(
+                onPressed: _deleteProgram,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: Text('Delete'),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
