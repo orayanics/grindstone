@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:grindstone/core/routes/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:grindstone/core/config/firebase_options.dart';
-import 'package:grindstone/core/services/program_crud_services.dart';
 import 'package:grindstone/core/services/user_session.dart';
 import 'package:provider/provider.dart';
 import 'core/services/auth_service.dart';
+import 'core/services/program_service.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -31,10 +31,11 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider<UserProvider>(
           create: (_) => UserProvider(),
         ),
-        ProxyProvider<UserProvider, ApiCalls>(
-            update: (_, userProvider, __) => ApiCalls(
-                  userProvider,
-                ))
+        ChangeNotifierProvider<ProgramService>(
+          create: (context) => ProgramService(
+            Provider.of<UserProvider>(context, listen: false),
+          ),
+        ),
       ],
       child: MaterialApp.router(
         routerConfig: appRouter,

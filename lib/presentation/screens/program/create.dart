@@ -1,12 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:grindstone/core/exports/components.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:grindstone/core/model/exercise_program.dart';
-import 'package:grindstone/core/services/program_crud_services.dart';
-import 'package:go_router/go_router.dart';
+import 'package:grindstone/core/services/program_service.dart';
 import 'package:grindstone/core/routes/routes.dart';
-import 'package:grindstone/core/api/exercise_api.dart';
+import 'package:grindstone/core/services/exercise_api.dart';
+import 'package:grindstone/core/exports/components.dart';
+import 'package:go_router/go_router.dart';
 
 class CreateProgramView extends StatefulWidget {
   const CreateProgramView({super.key});
@@ -17,18 +18,18 @@ class CreateProgramView extends StatefulWidget {
 
 class _CreateProgramViewState extends State<CreateProgramView> {
   final _formKey = GlobalKey<FormState>();
-  final _programNameController = TextEditingController();
-  final List<String> _exercises = [];
-  final List<Map<String, String>> _selectedExercises = [];
-  final FirestoreService _firestoreService = FirestoreService();
-  List<Map<String, String>> _searchResults = [];
-  String? _selectedDay;
 
-  final _userId = FirebaseAuth.instance.currentUser?.uid;
+  // Input Controllers
+  final _programName = TextEditingController();
+  final _dayOfExecution = TextEditingController();
+  final _searchController = TextEditingController();
+
+  final List<Map<String, String>> _selectedExercises = [];
+  List<Map<String, String>> _searchResults = [];
 
   Future<void> _fetchExercises(String query) async {
     try {
-      final results = await ExerciseApi.fetchExercises(query);
+      final results = await ExerciseApi.fetchSearch(query);
       setState(() {
         _searchResults = results;
       });
@@ -39,8 +40,13 @@ class _CreateProgramViewState extends State<CreateProgramView> {
 
   void _addExercise(Map<String, String> exercise) {
     setState(() {
-      _exercises.add(exercise['exerciseId']!);
       _selectedExercises.add(exercise);
+    });
+  }
+
+  void _deleteExercise(Map<String, String> exercise) {
+    setState(() {
+      _selectedExercises.remove(exercise);
     });
   }
 
@@ -48,25 +54,33 @@ class _CreateProgramViewState extends State<CreateProgramView> {
     if (_formKey.currentState!.validate()) {
       final program = ExerciseProgram(
         id: Uuid().v4(),
-        userId: _userId.toString(),
-        programName: _programNameController.text,
-        dayOfExecution: _selectedDay!,
-        exercises: _exercises,
+        userId: FirebaseAuth.instance.currentUser!.uid,
+        programName: _programName.text,
+        dayOfExecution: _dayOfExecution.text,
+        exercises: _selectedExercises,
       );
-      await _firestoreService.createExerciseProgram(program);
-      if (!mounted) return;
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Use ProgramProvider to create the program
+      final programProvider =
+          Provider.of<ProgramService>(context, listen: false);
+
+      await programProvider.createProgram(program);
+
+      if (programProvider.errorMessage != null) {
+        FailToast.show(programProvider.errorMessage!);
+      } else {
+        SuccessToast.show('Program created successfully!');
         if (mounted) {
-          SuccessToast.show('Program created!');
-          context.go(AppRoutes.profile);
+          context.go(AppRoutes.programs);
         }
-      });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final programProvider = Provider.of<ProgramService>(context);
+
     return Scaffold(
       appBar: AppBar(title: Text('Create Exercise Program')),
       body: Padding(
@@ -76,7 +90,7 @@ class _CreateProgramViewState extends State<CreateProgramView> {
           child: Column(
             children: [
               TextFormField(
-                controller: _programNameController,
+                controller: _programName,
                 decoration: InputDecoration(labelText: 'Program Name'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -87,7 +101,9 @@ class _CreateProgramViewState extends State<CreateProgramView> {
               ),
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: 'Day of Execution'),
-                value: _selectedDay,
+                value: _dayOfExecution.text.isNotEmpty
+                    ? _dayOfExecution.text
+                    : null,
                 items: [
                   'Monday',
                   'Tuesday',
@@ -104,7 +120,7 @@ class _CreateProgramViewState extends State<CreateProgramView> {
                     .toList(),
                 onChanged: (value) {
                   setState(() {
-                    _selectedDay = value;
+                    _dayOfExecution.text = value!;
                   });
                 },
                 validator: (value) {
@@ -115,6 +131,7 @@ class _CreateProgramViewState extends State<CreateProgramView> {
                 },
               ),
               TextFormField(
+                controller: _searchController,
                 decoration: InputDecoration(labelText: 'Search Exercises'),
                 onChanged: (value) async {
                   await _fetchExercises(value);
@@ -135,10 +152,13 @@ class _CreateProgramViewState extends State<CreateProgramView> {
                   },
                 ),
               ),
-              PrimaryButton(
-                label: 'Create',
-                onPressed: _submitProgram,
-              ),
+              if (programProvider.isLoading)
+                CircularProgressIndicator()
+              else
+                PrimaryButton(
+                  label: 'Create',
+                  onPressed: _submitProgram,
+                ),
               Expanded(
                 child: ListView.builder(
                   itemCount: _selectedExercises.length,
@@ -146,6 +166,10 @@ class _CreateProgramViewState extends State<CreateProgramView> {
                     final exercise = _selectedExercises[index];
                     return ListTile(
                       title: Text(exercise['name']!),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () => _deleteExercise(exercise),
+                      ),
                     );
                   },
                 ),
