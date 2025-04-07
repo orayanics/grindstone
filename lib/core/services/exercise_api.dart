@@ -3,7 +3,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ExerciseApi {
-  static Future<List<Map<String, String>>> fetchExercises(String query) async {
+  ExerciseApi._();
+  static final ExerciseApi _instance = ExerciseApi._();
+  factory ExerciseApi() => _instance;
+
+  static Future<List<Map<String, String>>> fetchSearch(String query) async {
     final response = await http.get(Uri.parse(
         '${dotenv.env['EXERCISE_API'] ?? ''}/exercises/autocomplete?search=$query'));
     if (response.statusCode == 200) {
