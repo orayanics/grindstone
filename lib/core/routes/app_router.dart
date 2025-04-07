@@ -44,9 +44,9 @@ final indexProgramRoute =
 final programDetailsRoute = GoRoute(
   path: '/program-details/:programId',
   builder: (context, state) {
-    final exerciseIds = state.extra as List<String>;
     final programId = state.pathParameters['programId'];
-    return ProgramDetailsView(exerciseIds: exerciseIds, programId: programId!);
+    final programName = state.extra as String;
+    return ProgramDetailsView(programId: programId!, programName: programName);
   },
 );
 
