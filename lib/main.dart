@@ -18,29 +18,87 @@ void main() async {
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  final _authService = AuthService();
+  final _userProvider = UserProvider();
+  late ProgramService _programService;
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _programService = ProgramService(_userProvider);
+    _initServices();
+  }
+
+  @override
+  void dispose() {
+    _programService.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initServices() async {
+    // auth and user listener
+    _authService.initAuthListener();
+    await _userProvider.initialize();
+
+    if (_userProvider.isAuthenticated()) {
+      _programService.startProgramsListener();
+    }
+
+    setState(() {
+      _initialized = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthService>(
-          create: (_) => AuthService(),
+        ChangeNotifierProvider<AuthService>.value(
+          value: _authService,
         ),
-        ChangeNotifierProvider<UserProvider>(
-          create: (_) => UserProvider(),
+        ChangeNotifierProvider<UserProvider>.value(
+          value: _userProvider,
         ),
-        ChangeNotifierProvider<ProgramService>(
-          create: (context) => ProgramService(
-            Provider.of<UserProvider>(context, listen: false),
-          ),
+        ChangeNotifierProvider<ProgramService>.value(
+          value: _programService,
         ),
       ],
-      child: MaterialApp.router(
-        routerConfig: appRouter,
-        debugShowCheckedModeBanner: false,
-      ),
+      child: Builder(builder: (context) {
+        final router = createRouter(context);
+
+        return MaterialApp.router(
+          routerConfig: router,
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            primarySwatch: Colors.teal,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.teal,
+              brightness: Brightness.light,
+            ),
+            scaffoldBackgroundColor: Colors.grey[100],
+            appBarTheme: AppBarTheme(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+              elevation: 2,
+            ),
+            cardTheme: CardTheme(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 }

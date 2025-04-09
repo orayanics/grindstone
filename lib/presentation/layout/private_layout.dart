@@ -1,38 +1,115 @@
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/routes/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:grindstone/core/services/auth_service.dart';
+import 'package:grindstone/core/services/user_session.dart';
+import 'package:provider/provider.dart';
 
-class PrivateLayout extends StatelessWidget {
+class PrivateLayout extends StatefulWidget {
   const PrivateLayout({super.key, required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: PrivateTitle(),
-      ),
-      body: child,
-    );
-  }
+  State<PrivateLayout> createState() => _PrivateLayoutState();
 }
 
-class PrivateTitle extends StatelessWidget {
-  const PrivateTitle({super.key});
+class _PrivateLayoutState extends State<PrivateLayout> {
+  int _selectedIndex = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final location = GoRouterState.of(context).matchedLocation;
+    if (location.contains('/profile')) {
+      setState(() => _selectedIndex = 2);
+    } else if (location.contains('/programs') ||
+        location.contains('/program-details') ||
+        location.contains('/create-program')) {
+      setState(() => _selectedIndex = 1);
+    } else {
+      setState(() => _selectedIndex = 0);
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        // TODO: Add Dashboard/Home
+        context.go(AppRoutes.profile);
+        break;
+      case 1:
+        context.go(AppRoutes.programs);
+        break;
+      case 2:
+        context.go(AppRoutes.profile);
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        context.go(AppRoutes.profile);
-      },
-      child: const Text(
-        'grindstone',
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
+    final authService = Provider.of<AuthService>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+
+    if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go(AppRoutes.login);
+      });
+
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
         ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Center(
+          child: Text(
+            'grindstone',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await authService.signout(context);
+            },
+            tooltip: 'Logout',
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: widget.child,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fitness_center),
+            label: 'Programs',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Theme.of(context).primaryColor,
+        onTap: _onItemTapped,
       ),
     );
   }
