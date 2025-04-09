@@ -3,78 +3,114 @@ import 'package:grindstone/core/exports/screens.dart';
 import 'package:grindstone/core/exports/layouts.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import 'package:grindstone/core/services/user_session.dart';
 
-// Declare public routes here
-final baseRoute = GoRoute(path: '/', builder: (context, state) => HomeView());
+// router with context and providers
+GoRouter createRouter(BuildContext context) {
+  final authService = Provider.of<AuthService>(context, listen: false);
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-final publicRoutes = ShellRoute(
-    builder: (context, state, child) => PublicLayout(child: child),
-    routes: [
-      baseRoute,
-      registerRoute,
-      loginRoute,
-    ],
-    redirect: (context, state) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      if (authService.isSignedIn) {
-        return '/profile';
-      }
-      return null;
-    });
+  // Public routes
+  final baseRoute = GoRoute(path: '/', builder: (context, state) => HomeView());
 
-final registerRoute =
-    GoRoute(path: '/register', builder: (context, state) => RegisterView());
+  final registerRoute =
+      GoRoute(path: '/register', builder: (context, state) => RegisterView());
 
-final loginRoute =
-    GoRoute(path: '/login', builder: (context, state) => LoginView());
+  final loginRoute =
+      GoRoute(path: '/login', builder: (context, state) => LoginView());
 
-// Declare private routes here
-final profileRoute =
-    GoRoute(path: '/profile', builder: (context, state) => ProfileView());
+  // Private routes
+  final profileRoute =
+      GoRoute(path: '/profile', builder: (context, state) => ProfileView());
 
-final createProgramRoute = GoRoute(
-    path: '/create-program',
+  final createProgramRoute = GoRoute(
+      path: '/create-program',
+      builder: (context, state) {
+        return CreateProgramView();
+      });
+
+  final indexProgramRoute = GoRoute(
+      path: '/programs', builder: (context, state) => ProgramIndexView());
+
+  final programDetailsRoute = GoRoute(
+    path: '/program-details/:programId',
     builder: (context, state) {
-      return CreateProgramView();
-    });
+      final programId = state.pathParameters['programId'];
+      final programName = state.extra as String;
+      return ProgramDetailsView(
+          programId: programId!, programName: programName);
+    },
+  );
 
-final indexProgramRoute =
-    GoRoute(path: '/programs', builder: (context, state) => ProgramIndexView());
+  // Public shell route
+  final publicRoutes = ShellRoute(
+      builder: (context, state, child) => PublicLayout(child: child),
+      routes: [
+        baseRoute,
+        registerRoute,
+        loginRoute,
+      ],
+      redirect: (context, state) {
+        if (authService.isSignedIn && userProvider.isAuthenticated()) {
+          return '/profile';
+        }
+        return null;
+      });
 
-final programDetailsRoute = GoRoute(
-  path: '/program-details/:programId',
-  builder: (context, state) {
-    final programId = state.pathParameters['programId'];
-    final programName = state.extra as String;
-    return ProgramDetailsView(programId: programId!, programName: programName);
-  },
-);
+  // Private shell route
+  final privateRoutes = ShellRoute(
+      builder: (context, state, child) => PrivateLayout(child: child),
+      routes: [
+        profileRoute,
+        createProgramRoute,
+        indexProgramRoute,
+        programDetailsRoute,
+      ],
+      redirect: (context, state) {
+        if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
+          return '/login';
+        }
+        return null;
+      });
 
-// Private routes
-final privateRoutes = ShellRoute(
-    builder: (context, state, child) => PrivateLayout(child: child),
+  // create instance and return the router
+  return GoRouter(
+    initialLocation: '/',
+    refreshListenable: authService,
     routes: [
-      profileRoute,
-      createProgramRoute,
-      indexProgramRoute,
-      programDetailsRoute,
+      publicRoutes,
+      privateRoutes,
     ],
     redirect: (context, state) {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final loggingIn = state.uri.toString() == '/login';
-      if (!authService.isSignedIn && !loggingIn) {
+      final isAuthenticated =
+          authService.isSignedIn && userProvider.isAuthenticated();
+      final isLoggingIn = state.matchedLocation == '/login';
+      final isRegistering = state.matchedLocation == '/register';
+      final isPublicRoute = state.matchedLocation == '/';
+
+      // if no no auth and try to access priv
+      if (!isAuthenticated &&
+          !isLoggingIn &&
+          !isRegistering &&
+          !isPublicRoute) {
         return '/login';
       }
-      return null;
-    });
 
-final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
-  routes: [
-    publicRoutes,
-    privateRoutes,
-  ],
-);
+      // if ok
+      if (isAuthenticated && (isLoggingIn || isRegistering)) {
+        return '/profile';
+      }
+
+      return null;
+    },
+    errorBuilder: (context, state) => const Scaffold(
+      body: Center(
+        child: Text('Page not found'),
+      ),
+    ),
+  );
+}
 
 // Also declare your routes in routes.dart
 
