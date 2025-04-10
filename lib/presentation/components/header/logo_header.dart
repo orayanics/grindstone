@@ -18,8 +18,8 @@ class LogoHeader extends StatelessWidget {
                   isPurple
                       ? 'assets/logo/gPurple.png'
                       : 'assets/logo/gGreen.png',
-                  height: 100,
-                  width: 100,
+                  height: 80,
+                  width: 80,
                 ),
                 SizedBox(height: 24),
                 Text(

@@ -83,8 +83,7 @@ class ProgramService with ChangeNotifier {
           .snapshots()
           .listen((snapshot) {
         final programs = snapshot.docs
-            .map((doc) =>
-                ExerciseProgram.fromMap(doc.data() as Map<String, dynamic>))
+            .map((doc) => ExerciseProgram.fromMap(doc.data()))
             .toList();
 
         _programs = programs;

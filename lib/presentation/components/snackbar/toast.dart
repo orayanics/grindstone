@@ -7,7 +7,7 @@ class FailToast {
     Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
+        gravity: ToastGravity.BOTTOM,
         webBgColor: webFail,
         webPosition: "center",
         backgroundColor: Colors.red,
@@ -21,7 +21,7 @@ class SuccessToast {
     Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
+        gravity: ToastGravity.BOTTOM,
         webBgColor: webSuccess,
         webPosition: "center",
         backgroundColor: Colors.green,

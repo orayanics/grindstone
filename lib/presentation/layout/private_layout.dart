@@ -1,9 +1,11 @@
 import 'package:go_router/go_router.dart';
-import 'package:grindstone/core/routes/routes.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:grindstone/core/services/user_session.dart';
-import 'package:provider/provider.dart';
+import 'package:grindstone/core/routes/routes.dart';
+import 'package:grindstone/core/config/colors.dart';
 
 class PrivateLayout extends StatefulWidget {
   const PrivateLayout({super.key, required this.child});
@@ -76,18 +78,10 @@ class _PrivateLayoutState extends State<PrivateLayout> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
+              color: accentPurple,
             ),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await authService.signout(context);
-            },
-            tooltip: 'Logout',
-          ),
-        ],
       ),
       body: SafeArea(
         child: widget.child,
