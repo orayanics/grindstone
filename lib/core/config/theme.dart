@@ -7,21 +7,27 @@ class GrindstoneTheme {
       brightness: Brightness.light,
       primaryColor: accentPurple,
       scaffoldBackgroundColor: white,
+      useMaterial3: true,
       appBarTheme: AppBarTheme(
-        backgroundColor: white,
-        iconTheme: IconThemeData(color: black),
-        titleTextStyle: TextStyle(color: black, fontSize: 20),
-      ),
+          backgroundColor: white,
+          iconTheme: IconThemeData(color: black),
+          titleTextStyle: TextStyle(color: black, fontSize: 20),
+          elevation: 2.0,
+          centerTitle: true,
+          shadowColor: Colors.black45,
+          surfaceTintColor: Colors.transparent),
       textTheme: TextTheme(
         headlineMedium: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
-          color: white,
+        ),
+        bodySmall: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
         ),
         bodyMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.normal,
-          color: white,
         ),
       ),
       buttonTheme: ButtonThemeData(

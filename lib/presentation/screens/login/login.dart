@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/config/colors.dart';
+import 'package:grindstone/presentation/components/header/logo_header.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:grindstone/core/exports/components.dart';
@@ -16,13 +16,9 @@ class LoginView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // logo
-          SvgPicture.asset(
-            'assets/logo/gGreen.svg',
-            height: 100,
-            width: 100,
+          LogoHeader(
+            isPurple: false,
           ),
-          const LoginTitle(),
           const SizedBox(height: 16),
           LoginForm(),
           const SizedBox(height: 16),
@@ -30,38 +26,6 @@ class LoginView extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class LoginTitle extends StatelessWidget {
-  const LoginTitle({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-        child: Padding(
-            padding: const EdgeInsets.all(50.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Are you g?',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 6),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('Login to access your',
-                      style: Theme.of(context).textTheme.bodyMedium),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('programs and track progress',
-                      style: Theme.of(context).textTheme.bodyMedium),
-                ),
-              ],
-            )));
   }
 }
 
@@ -84,10 +48,8 @@ class LoginForm extends StatelessWidget {
                 )),
         const SizedBox(height: 6),
         FormInputEmail(
+          isPrimary: true,
           controller: _emailController,
-          validator: (value) => FormInputEmail(
-            controller: TextEditingController(),
-          ).emailValidator(value),
         ),
         const SizedBox(height: 12),
         Text('Password',
@@ -98,10 +60,8 @@ class LoginForm extends StatelessWidget {
                 )),
         const SizedBox(height: 6),
         FormInputPassword(
+          isPrimary: true,
           controller: _passwordController,
-          validator: (value) =>
-              FormInputPassword(controller: TextEditingController())
-                  .passwordValidator(value),
         ),
         SizedBox(height: 16),
         const Divider(

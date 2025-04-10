@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // BASE COLORS
 const Color white = Color(0xFFFFFFFF);
 const Color black = Color(0xFF000000);
+const Color lightGray = Color(0xFFF9F9F9);
 
 // ACCENT COLORS
 const Color accentPurple = Color(0xFF616EFB);
