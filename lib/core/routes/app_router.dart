@@ -18,7 +18,7 @@ GoRouter createRouter(BuildContext context) {
       GoRoute(path: '/register', builder: (context, state) => RegisterView());
 
   final loginRoute =
-      GoRoute(path: '/login', builder: (context, state) => LoginView());
+      GoRoute(path: '/', builder: (context, state) => LoginView());
 
   // Private routes
   final profileRoute =
@@ -69,7 +69,7 @@ GoRouter createRouter(BuildContext context) {
       ],
       redirect: (context, state) {
         if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
-          return '/login';
+          return '/';
         }
         return null;
       });
@@ -85,7 +85,7 @@ GoRouter createRouter(BuildContext context) {
     redirect: (context, state) {
       final isAuthenticated =
           authService.isSignedIn && userProvider.isAuthenticated();
-      final isLoggingIn = state.matchedLocation == '/login';
+      final isLoggingIn = state.matchedLocation == '/';
       final isRegistering = state.matchedLocation == '/register';
       final isPublicRoute = state.matchedLocation == '/';
 
@@ -94,7 +94,7 @@ GoRouter createRouter(BuildContext context) {
           !isLoggingIn &&
           !isRegistering &&
           !isPublicRoute) {
-        return '/login';
+        return '/';
       }
 
       // if ok

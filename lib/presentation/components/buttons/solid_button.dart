@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grindstone/core/config/colors.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String label;
@@ -14,8 +15,8 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final ButtonStyle style = ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: white,
+        foregroundColor: black,
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0));
 
@@ -41,8 +42,8 @@ class AccentButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final ButtonStyle style = ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        backgroundColor: accentPurple,
+        foregroundColor: white,
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0));
 

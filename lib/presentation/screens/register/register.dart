@@ -1,45 +1,368 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:grindstone/core/exports/components.dart';
 import 'package:provider/provider.dart';
+
+import 'package:grindstone/core/config/colors.dart';
+import 'package:grindstone/presentation/components/header/logo_header.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 
-class RegisterView extends StatelessWidget {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+// ignore lint issue here, it uses these packages for registration service
 
-  RegisterView({super.key});
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
+
+  @override
+  State<RegisterView> createState() => _RegisterViewState();
+}
+
+class _RegisterViewState extends State<RegisterView> {
+  bool _isLoading = false;
+  final GlobalKey<_RegisterFormState> _formKey =
+      GlobalKey<_RegisterFormState>();
+
+  void _updateLoadingState(bool isLoading) {
+    setState(() {
+      _isLoading = isLoading;
+    });
+  }
+
+  void _handleBackPress(BuildContext context) {
+    final formState = _formKey.currentState;
+    if (formState != null && formState._currentStep > 0) {
+      formState._previousStep();
+    } else {
+      GoRouter.of(context).go('/');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Register')),
-      body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        shadowColor: const Color.fromARGB(50, 0, 0, 0),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: accentPurple),
+          onPressed: () => _handleBackPress(context),
+        ),
+      ),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          LogoHeader(isPurple: true),
+                        ],
+                      ),
+                    ),
+                    RegisterForm(
+                        key: _formKey, onLoadingChanged: _updateLoadingState),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (_isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black26,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class RegisterForm extends StatefulWidget {
+  final Function(bool) onLoadingChanged;
+
+  const RegisterForm({
+    super.key,
+    required this.onLoadingChanged,
+  });
+
+  @override
+  State<RegisterForm> createState() => _RegisterFormState();
+}
+
+class _RegisterFormState extends State<RegisterForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  // Account info
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  // Personal info
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+
+  // Health info
+  final TextEditingController _weightController = TextEditingController();
+  final TextEditingController _heightController = TextEditingController();
+  String _sex = 'Male';
+  final TextEditingController _ageController = TextEditingController();
+
+  int _currentStep = 0;
+  bool _isLoading = false;
+  String? _passwordError;
+
+  final List<String> _sexOptions = ['Male', 'Female', 'Other'];
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _weightController.dispose();
+    _heightController.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
+
+  bool _validatePasswordMatch() {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _passwordError = 'Passwords do not match';
+      });
+      FailToast.show(_passwordError!);
+      return false;
+    }
+    setState(() {
+      _passwordError = null;
+    });
+    return true;
+  }
+
+  bool _validateCurrentStep() {
+    bool isValid = false;
+
+    if (_formKey.currentState != null) {
+      isValid = _formKey.currentState!.validate();
+
+      switch (_currentStep) {
+        case 0:
+          isValid = isValid && _validatePasswordMatch();
+          break;
+        case 1:
+          break;
+        case 2:
+          break;
+      }
+    }
+
+    return isValid;
+  }
+
+  void _nextStep() {
+    final isValid = _validateCurrentStep();
+
+    if (!isValid) {
+      return;
+    }
+
+    setState(() {
+      if (_currentStep < 2) {
+        _currentStep++;
+      }
+    });
+  }
+
+  void _previousStep() {
+    setState(() {
+      if (_currentStep > 0) {
+        _currentStep--;
+      }
+    });
+  }
+
+  Future<void> _completeRegistration() async {
+    setState(() {
+      _isLoading = true;
+    });
+    widget.onLoadingChanged(_isLoading);
+
+    // final authService = Provider.of<AuthService>(context, listen: false);
+    // await authService.signup(
+    //   email: _emailController.text,
+    //   password: _passwordController.text,
+    //   context: context,
+    // );
+
+    // TODO: Save additional user profile information after registration
+
+    setState(() {
+      _isLoading = false;
+    });
+    widget.onLoadingChanged(_isLoading);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildCurrentStepContent(),
+          Column(
             children: [
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: AccentButton(
+                  onPressed:
+                      _currentStep < 2 ? _nextStep : _completeRegistration,
+                  label: _currentStep < 2 ? 'Next' : 'Register',
+                ),
               ),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
-                obscureText: true,
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  3,
+                  (index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: index == _currentStep ? accentPurple : Colors.grey,
+                    ),
+                  ),
+                ),
               ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  final authService =
-                      Provider.of<AuthService>(context, listen: false);
-                  await authService.signup(
-                    email: _emailController.text,
-                    password: _passwordController.text,
-                    context: context,
-                  );
-                },
-                child: const Text('Register'),
-              )
             ],
-          )),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentStepContent() {
+    switch (_currentStep) {
+      case 0:
+        return _buildAccountInfoStep();
+      case 1:
+        return _buildPersonalInfoStep();
+      case 2:
+        return _buildHealthInfoStep();
+      default:
+        return const SizedBox();
+    }
+  }
+
+  Widget _buildAccountInfoStep() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          FormInputEmail(
+            isPrimary: false,
+            controller: _emailController,
+            label: 'Email Address',
+            isRequired: true,
+          ),
+          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          FormInputPassword(
+            isPrimary: false,
+            controller: _passwordController,
+            label: 'Password',
+            isRequired: true,
+          ),
+          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          FormInputPassword(
+            isPrimary: false,
+            controller: _confirmPasswordController,
+            label: 'Confirm Password',
+            isRequired: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalInfoStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FormInputText(
+          isPrimary: false,
+          controller: _firstNameController,
+          label: 'First Name',
+          isRequired: true,
+        ),
+        const SizedBox(height: 12),
+        FormInputText(
+          isPrimary: false,
+          controller: _lastNameController,
+          label: 'Last Name',
+          isRequired: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHealthInfoStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FormInputNumber(
+          isPrimary: false,
+          controller: _weightController,
+          label: 'Weight (kg)',
+          isRequired: true,
+        ),
+        const SizedBox(height: 12),
+        FormInputNumber(
+          isPrimary: false,
+          controller: _heightController,
+          label: 'Height (cm)',
+          isRequired: true,
+        ),
+        const SizedBox(height: 12),
+        CustomDropdown(
+          label: 'Sex',
+          options: _sexOptions,
+          value: _sex,
+          isRequired: true,
+          isPrimary: false,
+          onChanged: (String newValue) {
+            setState(() {
+              _sex = newValue;
+            });
+          },
+        ),
+        const SizedBox(height: 12),
+        FormInputNumber(
+          isPrimary: false,
+          controller: _ageController,
+          label: 'Age',
+          isRequired: true,
+        ),
+      ],
     );
   }
 }

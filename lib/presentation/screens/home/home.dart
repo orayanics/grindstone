@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:grindstone/core/exports/components.dart';
-import 'package:grindstone/core/routes/routes.dart';
+import 'package:grindstone/core/exports/screens.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -19,19 +17,23 @@ class ButtonContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.center,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF4755E6),
+            Color(0xFF6164FB),
+            Color(0xFF6164FB),
+            Color(0xFF6165FB),
+            Color(0xFF4755E6),
+          ],
+          stops: [0.0, 0.1, 0.5, 0.9, 1.0],
+        ),
+      ),
       child: Column(
-        children: [
-          PrimaryButton(
-              label: 'Login',
-              onPressed: () {
-                context.go(AppRoutes.login);
-              }),
-          AccentButton(
-              label: 'Register',
-              onPressed: () {
-                context.go(AppRoutes.register);
-              })
-        ],
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [LoginView()],
       ),
     );
   }

@@ -9,11 +9,11 @@ class PublicLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: PublicTitle(),
+    return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: SafeArea(
+        child: child,
       ),
-      body: child,
     );
   }
 }
