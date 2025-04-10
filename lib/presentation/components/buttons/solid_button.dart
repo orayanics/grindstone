@@ -14,8 +14,8 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final ButtonStyle style = ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0));
 

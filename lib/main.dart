@@ -1,17 +1,23 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
-import 'package:grindstone/core/routes/app_router.dart';
+import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+import 'package:grindstone/core/config/theme.dart';
+import 'package:grindstone/core/routes/app_router.dart';
 import 'package:grindstone/core/config/firebase_options.dart';
 import 'package:grindstone/core/services/user_session.dart';
-import 'package:provider/provider.dart';
+
 import 'core/services/auth_service.dart';
 import 'core/services/program_service.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
-
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -78,25 +84,7 @@ class _MainAppState extends State<MainApp> {
         return MaterialApp.router(
           routerConfig: router,
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            primarySwatch: Colors.teal,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.teal,
-              brightness: Brightness.light,
-            ),
-            scaffoldBackgroundColor: Colors.grey[100],
-            appBarTheme: AppBarTheme(
-              backgroundColor: Colors.teal,
-              foregroundColor: Colors.white,
-              elevation: 2,
-            ),
-            cardTheme: CardTheme(
-              elevation: 1,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
+          theme: GrindstoneTheme.lightTheme,
         );
       }),
     );

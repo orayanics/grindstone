@@ -21,6 +21,7 @@ dependencies:
   http: ^0.13.3
   uuid: ^3.0.4
   shared_preferences: ^2.5.3
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:
@@ -28,7 +29,9 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
-  uses-material-design: true
-
-assets:
-  - .env
+  assets:
+    - assets/.env
+    - assets/logo/gGreen.svg
+    - assets/logo/gPurple.svg
+    - assets/logo/gGreen.png
+    - assets/logo/gPurple.png
