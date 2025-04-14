@@ -145,11 +145,20 @@ class _FormInputPasswordState extends State<FormInputPassword> {
   bool _hidePassword = true;
   String? errorMessage;
 
-  // validator returns true if valid, false if invalid
+  // password must require: uppercase character, lowercase character, special character, number, and length of 8 characters
   bool passwordValidator(String? value) {
     if (value == null || value.isEmpty) {
       setState(() {
         errorMessage = 'Please enter your password';
+      });
+      return false;
+    }
+    final passwordRegex = RegExp(
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+    if (!passwordRegex.hasMatch(value)) {
+      setState(() {
+        errorMessage =
+            'Password must contain at least 8 characters, including uppercase, lowercase, number, and special character';
       });
       return false;
     }
@@ -267,21 +276,25 @@ class FormInputText extends StatefulWidget {
 class _FormInputTextState extends State<FormInputText> {
   String? errorMessage;
 
-  // validator returns true if valid, false if invalid
   bool textValidator(String? value) {
     if (value == null || value.isEmpty) {
       setState(() {
-        errorMessage = 'Please enter your text';
+        errorMessage = 'Please fill up the required information.';
       });
       return false;
     }
-    final textRegex = RegExp(r'^[a-zA-Z]+$');
+    setState(() {
+      errorMessage = null;
+    });
+
+    final textRegex = RegExp(r'^[a-zA-Z]{1,50}$');
     if (!textRegex.hasMatch(value)) {
       setState(() {
-        errorMessage = 'Please enter only letters';
+        errorMessage = 'Please enter only letters (maximum of 50).';
       });
       return false;
     }
+
     setState(() {
       errorMessage = null;
     });

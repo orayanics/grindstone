@@ -57,19 +57,6 @@ class AuthService extends ChangeNotifier {
             .doc(user.uid)
             .set(newUser.toMap());
 
-        final docSnapshot = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-        if (docSnapshot.exists) {
-          final userData = docSnapshot.data();
-          debugPrint("✅ User saved in Firestore: $userData");
-        } else {
-          debugPrint("❌ Failed to find saved user in Firestore.");
-        }
-
-
         await userProvider.setUserId(user.uid);
         notifyListeners();
         SuccessToast.show("Registration Successful");
@@ -89,7 +76,6 @@ class AuthService extends ChangeNotifier {
       FailToast.show(e.toString());
     }
   }
-
 
   Future<void> signin({
     required String email,
