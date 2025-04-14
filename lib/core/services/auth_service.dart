@@ -5,6 +5,8 @@ import 'package:grindstone/core/exports/components.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/services/user_session.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:grindstone/core/model/user.dart' as MyUser;
 
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -24,6 +26,10 @@ class AuthService extends ChangeNotifier {
     required String email,
     required String password,
     required BuildContext context,
+    required String name,
+    required int age,
+    required double height,
+    required double weight,
   }) async {
     final userProvider = context.read<UserProvider>();
     final navigator = GoRouter.of(context);
@@ -35,6 +41,22 @@ class AuthService extends ChangeNotifier {
       final User? user = userCredential.user;
 
       if (user != null) {
+        // Create the custom user object
+        final newUser = MyUser.User(
+          id: user.uid,
+          name: name,
+          email: email,
+          age: age,
+          height: height,
+          weight: weight,
+        );
+
+        // Save to Firestore
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set(newUser.toMap());
+
         await userProvider.setUserId(user.uid);
         notifyListeners();
         SuccessToast.show("Registration Successful");

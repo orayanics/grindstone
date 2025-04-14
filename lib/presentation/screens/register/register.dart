@@ -106,8 +106,7 @@ class _RegisterFormState extends State<RegisterForm> {
   // Account info
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   // Personal info
   final TextEditingController _firstNameController = TextEditingController();
@@ -116,8 +115,8 @@ class _RegisterFormState extends State<RegisterForm> {
   // Health info
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
-  String _sex = 'Male';
   final TextEditingController _ageController = TextEditingController();
+  String _sex = 'Male';
 
   int _currentStep = 0;
   bool _isLoading = false;
@@ -153,37 +152,23 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   bool _validateCurrentStep() {
-    bool isValid = false;
+    bool isValid = _formKey.currentState?.validate() ?? false;
 
-    if (_formKey.currentState != null) {
-      isValid = _formKey.currentState!.validate();
-
-      switch (_currentStep) {
-        case 0:
-          isValid = isValid && _validatePasswordMatch();
-          break;
-        case 1:
-          break;
-        case 2:
-          break;
-      }
+    if (_currentStep == 0) {
+      isValid = isValid && _validatePasswordMatch();
     }
 
     return isValid;
   }
 
   void _nextStep() {
-    final isValid = _validateCurrentStep();
-
-    if (!isValid) {
-      return;
+    if (_validateCurrentStep()) {
+      setState(() {
+        if (_currentStep < 2) {
+          _currentStep++;
+        }
+      });
     }
-
-    setState(() {
-      if (_currentStep < 2) {
-        _currentStep++;
-      }
-    });
   }
 
   void _previousStep() {
@@ -195,24 +180,32 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   Future<void> _completeRegistration() async {
+    if (!_validateCurrentStep()) return;
+
     setState(() {
       _isLoading = true;
     });
-    widget.onLoadingChanged(_isLoading);
+    widget.onLoadingChanged(true);
 
-    // final authService = Provider.of<AuthService>(context, listen: false);
-    // await authService.signup(
-    //   email: _emailController.text,
-    //   password: _passwordController.text,
-    //   context: context,
-    // );
-
-    // TODO: Save additional user profile information after registration
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      await authService.signup(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        context: context,
+        name: "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}",
+        age: int.parse(_ageController.text),
+        height: double.parse(_heightController.text),
+        weight: double.parse(_weightController.text),
+      );
+    } catch (e) {
+      FailToast.show("Something went wrong: ${e.toString()}");
+    }
 
     setState(() {
       _isLoading = false;
     });
-    widget.onLoadingChanged(_isLoading);
+    widget.onLoadingChanged(false);
   }
 
   @override
@@ -223,35 +216,30 @@ class _RegisterFormState extends State<RegisterForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildCurrentStepContent(),
-          Column(
-            children: [
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: AccentButton(
-                  onPressed:
-                      _currentStep < 2 ? _nextStep : _completeRegistration,
-                  label: _currentStep < 2 ? 'Next' : 'Register',
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  3,
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: AccentButton(
+              onPressed: _currentStep < 2 ? _nextStep : _completeRegistration,
+              label: _currentStep < 2 ? 'Next' : 'Register',
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              3,
                   (index) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: index == _currentStep ? accentPurple : Colors.grey,
-                    ),
-                  ),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: index == _currentStep ? accentPurple : Colors.grey,
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -272,35 +260,30 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   Widget _buildAccountInfoStep() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          FormInputEmail(
-            isPrimary: false,
-            controller: _emailController,
-            label: 'Email Address',
-            isRequired: true,
-          ),
-          const SizedBox(height: 16),
-          const SizedBox(height: 8),
-          FormInputPassword(
-            isPrimary: false,
-            controller: _passwordController,
-            label: 'Password',
-            isRequired: true,
-          ),
-          const SizedBox(height: 16),
-          const SizedBox(height: 8),
-          FormInputPassword(
-            isPrimary: false,
-            controller: _confirmPasswordController,
-            label: 'Confirm Password',
-            isRequired: true,
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FormInputEmail(
+          controller: _emailController,
+          label: 'Email Address',
+          isRequired: true,
+          isPrimary: false,
+        ),
+        const SizedBox(height: 16),
+        FormInputPassword(
+          controller: _passwordController,
+          label: 'Password',
+          isRequired: true,
+          isPrimary: false,
+        ),
+        const SizedBox(height: 16),
+        FormInputPassword(
+          controller: _confirmPasswordController,
+          label: 'Confirm Password',
+          isRequired: true,
+          isPrimary: false,
+        ),
+      ],
     );
   }
 
@@ -309,17 +292,17 @@ class _RegisterFormState extends State<RegisterForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FormInputText(
-          isPrimary: false,
           controller: _firstNameController,
           label: 'First Name',
           isRequired: true,
-        ),
-        const SizedBox(height: 12),
-        FormInputText(
           isPrimary: false,
+        ),
+        const SizedBox(height: 16),
+        FormInputText(
           controller: _lastNameController,
           label: 'Last Name',
           isRequired: true,
+          isPrimary: false,
         ),
       ],
     );
@@ -330,37 +313,36 @@ class _RegisterFormState extends State<RegisterForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FormInputNumber(
-          isPrimary: false,
           controller: _weightController,
           label: 'Weight (kg)',
           isRequired: true,
-        ),
-        const SizedBox(height: 12),
-        FormInputNumber(
           isPrimary: false,
+        ),
+        const SizedBox(height: 16),
+        FormInputNumber(
           controller: _heightController,
           label: 'Height (cm)',
           isRequired: true,
+          isPrimary: false,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         CustomDropdown(
           label: 'Sex',
           options: _sexOptions,
           value: _sex,
           isRequired: true,
-          isPrimary: false,
           onChanged: (String newValue) {
             setState(() {
               _sex = newValue;
             });
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         FormInputNumber(
-          isPrimary: false,
           controller: _ageController,
           label: 'Age',
           isRequired: true,
+          isPrimary: false,
         ),
       ],
     );
