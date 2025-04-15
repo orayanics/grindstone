@@ -129,13 +129,15 @@ class FormInputPassword extends StatefulWidget {
   final bool isPrimary;
   final String label;
   final bool isRequired;
+  final String placeholder;
 
   const FormInputPassword(
       {super.key,
       required this.controller,
       required this.isPrimary,
       this.label = '',
-      this.isRequired = false});
+      this.isRequired = false,
+      this.placeholder = ''});
 
   @override
   State<FormInputPassword> createState() => _FormInputPasswordState();
@@ -215,7 +217,9 @@ class _FormInputPasswordState extends State<FormInputPassword> {
             ),
             child: TextFormField(
               decoration: InputDecoration(
-                hintText: '********',
+                hintText: widget.placeholder.isNotEmpty
+                    ? widget.placeholder
+                    : '********',
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 errorStyle: const TextStyle(
@@ -261,13 +265,15 @@ class FormInputText extends StatefulWidget {
   final bool isPrimary;
   final String label;
   final bool isRequired;
+  final String placeholder;
 
   const FormInputText(
       {super.key,
       required this.controller,
       required this.isPrimary,
       this.label = '',
-      this.isRequired = false});
+      this.isRequired = false,
+      this.placeholder = ''});
 
   @override
   State<FormInputText> createState() => _FormInputTextState();
@@ -348,7 +354,8 @@ class _FormInputTextState extends State<FormInputText> {
             ),
             child: TextFormField(
               decoration: InputDecoration(
-                hintText: 'John Doe',
+                hintText:
+                    widget.placeholder.isNotEmpty ? widget.placeholder : 'User',
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 errorStyle: const TextStyle(
@@ -383,13 +390,15 @@ class FormInputNumber extends StatefulWidget {
   final bool isPrimary;
   final String label;
   final bool isRequired;
+  final String placeholder;
 
   const FormInputNumber(
       {super.key,
       required this.controller,
       required this.isPrimary,
       this.label = '',
-      this.isRequired = false});
+      this.isRequired = false,
+      this.placeholder = ''});
 
   @override
   State<FormInputNumber> createState() => _FormInputNumberState();
@@ -466,7 +475,9 @@ class _FormInputNumberState extends State<FormInputNumber> {
             ),
             child: TextFormField(
               decoration: InputDecoration(
-                hintText: '0.0',
+                hintText: widget.placeholder.isNotEmpty
+                    ? widget.placeholder
+                    : 'Error fetching',
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 errorStyle: const TextStyle(

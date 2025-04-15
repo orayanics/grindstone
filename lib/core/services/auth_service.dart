@@ -26,7 +26,8 @@ class AuthService extends ChangeNotifier {
     required String email,
     required String password,
     required BuildContext context,
-    required String name,
+    required String firstName,
+    required String lastName,
     required int age,
     required double height,
     required double weight,
@@ -44,7 +45,8 @@ class AuthService extends ChangeNotifier {
         // Create the custom user object
         final newUser = MyUser.User(
           id: user.uid,
-          name: name,
+          firstName: firstName,
+          lastName: lastName,
           email: email,
           age: age,
           height: height,
@@ -60,7 +62,7 @@ class AuthService extends ChangeNotifier {
         await userProvider.setUserId(user.uid);
         notifyListeners();
         SuccessToast.show("Registration Successful");
-        navigator.go(AppRoutes.profile);
+        navigator.go(AppRoutes.home);
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage = "Registration failed";
@@ -96,6 +98,22 @@ class AuthService extends ChangeNotifier {
 
       if (user != null) {
         await userProvider.setUserId(user.uid);
+
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (userDoc.exists) {
+          final userData = userDoc.data();
+          await userProvider.setUserProfile(
+              firstName: userData?['firstName'] ?? 'No fetch',
+              lastName: userData?['lastName'] ?? 'No fetch',
+              age: userData?['age'] ?? 'Error',
+              height: userData?['height'] ?? 'Error',
+              weight: userData?['weight'] ?? 'Error');
+        }
+
         notifyListeners();
         SuccessToast.show("Login Successful");
         navigator.go(AppRoutes.profile);

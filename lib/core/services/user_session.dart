@@ -4,11 +4,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider with ChangeNotifier {
   String? _userId;
+  String? _firstName;
+  String? _lastName;
+  int? _age;
+  double? _height;
+  double? _weight;
+
   bool _initialized = false;
   bool _isLoading = true;
 
   // Getters
   String? get userId => _userId;
+  String? get firstName => _firstName;
+  String? get lastName => _lastName;
+  int? get age => _age;
+  double? get height => _height;
+  double? get weight => _weight;
   bool get isInitialized => _initialized;
   bool get isLoading => _isLoading;
 
@@ -89,5 +100,20 @@ class UserProvider with ChangeNotifier {
 
   bool isAuthenticated() {
     return _userId != null && _userId!.isNotEmpty;
+  }
+
+  Future<void> setUserProfile({
+    required String firstName,
+    required String lastName,
+    required int age,
+    required double height,
+    required double weight,
+  }) async {
+    _firstName = firstName;
+    _lastName = lastName;
+    _age = age;
+    _height = height;
+    _weight = weight;
+    notifyListeners();
   }
 }

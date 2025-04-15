@@ -72,6 +72,10 @@ class _PrivateLayoutState extends State<PrivateLayout> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: accentPurple),
+          onPressed: () => GoRouter.of(context).go(AppRoutes.home),
+        ),
         title: Center(
           child: Text(
             'grindstone',
@@ -87,6 +91,7 @@ class _PrivateLayoutState extends State<PrivateLayout> {
         child: widget.child,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: white,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
