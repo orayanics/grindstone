@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/exports/components.dart';
+import 'package:grindstone/core/routes/routes.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grindstone/core/config/colors.dart';
@@ -32,7 +33,7 @@ class _RegisterViewState extends State<RegisterView> {
     if (formState != null && formState._currentStep > 0) {
       formState._previousStep();
     } else {
-      GoRouter.of(context).go('/');
+      GoRouter.of(context).go(AppRoutes.home);
     }
   }
 
@@ -106,7 +107,8 @@ class _RegisterFormState extends State<RegisterForm> {
   // Account info
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   // Personal info
   final TextEditingController _firstNameController = TextEditingController();
@@ -193,7 +195,8 @@ class _RegisterFormState extends State<RegisterForm> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
         context: context,
-        name: "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}",
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
         age: int.parse(_ageController.text),
         height: double.parse(_heightController.text),
         weight: double.parse(_weightController.text),
@@ -230,7 +233,7 @@ class _RegisterFormState extends State<RegisterForm> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               3,
-                  (index) => Container(
+              (index) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: 8,
                 height: 8,

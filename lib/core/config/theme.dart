@@ -21,6 +21,10 @@ class GrindstoneTheme {
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
+        headlineSmall: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
         bodySmall: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.normal,

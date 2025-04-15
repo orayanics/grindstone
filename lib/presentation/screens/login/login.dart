@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/config/colors.dart';
+import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/presentation/components/header/logo_header.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/auth_service.dart';
@@ -105,7 +106,7 @@ class LoginRedirect extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              GoRouter.of(context).go('/register');
+              GoRouter.of(context).go(AppRoutes.register);
             },
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,

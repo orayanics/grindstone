@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/exports/screens.dart';
 import 'package:grindstone/core/exports/layouts.dart';
+import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,18 @@ GoRouter createRouter(BuildContext context) {
     },
   );
 
+  final profileHealth = GoRoute(
+      path: AppRoutes.updateHealth,
+      builder: (context, state) => ProfileHealthView());
+
+  final profilePersonal = GoRoute(
+      path: AppRoutes.updatePersonal,
+      builder: (context, state) => ProfilePersonalView());
+
+  final profilePassword = GoRoute(
+      path: AppRoutes.changePassword,
+      builder: (context, state) => ProfilePasswordView());
+
   // Public shell route
   final publicRoutes = ShellRoute(
       builder: (context, state, child) => PublicLayout(child: child),
@@ -66,6 +79,9 @@ GoRouter createRouter(BuildContext context) {
         createProgramRoute,
         indexProgramRoute,
         programDetailsRoute,
+        profileHealth,
+        profilePersonal,
+        profilePassword
       ],
       redirect: (context, state) {
         if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
