@@ -3,12 +3,14 @@ import 'package:grindstone/core/config/colors.dart';
 
 class SearchInput extends StatefulWidget {
   final String placeholder;
+  final bool hasIcon;
   final Function(String) onChanged;
 
   const SearchInput({
     super.key,
     required this.placeholder,
     required this.onChanged,
+    this.hasIcon = true,
   });
 
   @override
@@ -68,9 +70,10 @@ class _SearchInputState extends State<SearchInput> {
                   decoration: InputDecoration(
                     hintText: widget.placeholder,
                     hintStyle: TextStyle(color: textLight),
-                    prefixIcon: Icon(Icons.search_rounded),
+                    prefixIcon:
+                        widget.hasIcon ? Icon(Icons.search_rounded) : null,
                     prefixIconColor: textLight,
-                    suffixIcon: _searchQuery.isNotEmpty
+                    suffixIcon: widget.hasIcon && _searchQuery.isNotEmpty
                         ? IconButton(
                             icon: Icon(Icons.clear_rounded),
                             onPressed: _clearSearch,
@@ -78,7 +81,8 @@ class _SearchInputState extends State<SearchInput> {
                         : null,
                     suffixIconColor: textLight,
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 16),
                   ),
                   onChanged: widget.onChanged,
                 ),

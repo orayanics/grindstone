@@ -44,9 +44,8 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
   void _checkAuthentication() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authService = Provider.of<AuthService>(context, listen: false);
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-      if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
+      if (!authService.isAuthenticated()) {
         FailToast.show('You must be logged in to view programs');
         context.go(AppRoutes.login);
       }
@@ -55,13 +54,14 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
 
   void _initProgramsListener() {
     final authService = Provider.of<AuthService>(context, listen: false);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    if (authService.isSignedIn && userProvider.isAuthenticated()) {
+    if (authService.isAuthenticated()) {
       final programService =
           Provider.of<ProgramService>(context, listen: false);
 
-      programService.startProgramsListener();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        programService.startProgramsListener();
+      });
     }
   }
 
@@ -79,21 +79,12 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
   @override
   Widget build(BuildContext context) {
     final programService = Provider.of<ProgramService>(context);
-    final authService = Provider.of<AuthService>(context);
-    final userProvider = Provider.of<UserProvider>(context);
+    final authService = Provider.of<AuthService>(context, listen: false);
 
-    if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('You must be logged in to view programs'),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.go(AppRoutes.login),
-              child: Text('Go to Login'),
-            ),
-          ],
+    if (!authService.isAuthenticated()) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
         ),
       );
     }

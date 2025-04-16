@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:grindstone/core/services/auth_service.dart';
-import 'package:grindstone/core/services/user_session.dart';
 import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/config/colors.dart';
 
@@ -55,9 +54,8 @@ class _PrivateLayoutState extends State<PrivateLayout> {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
-    final userProvider = Provider.of<UserProvider>(context);
 
-    if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
+    if (!authService.isAuthenticated()) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.go(AppRoutes.login);
       });

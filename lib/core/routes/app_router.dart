@@ -5,12 +5,10 @@ import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:grindstone/core/services/user_session.dart';
 
 // router with context and providers
 GoRouter createRouter(BuildContext context) {
   final authService = Provider.of<AuthService>(context, listen: false);
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
 
   // Public routes
   final registerRoute =
@@ -65,7 +63,7 @@ GoRouter createRouter(BuildContext context) {
         loginRoute,
       ],
       redirect: (context, state) {
-        if (authService.isSignedIn && userProvider.isAuthenticated()) {
+        if (authService.isAuthenticated()) {
           return '/profile';
         }
         return null;
@@ -85,7 +83,7 @@ GoRouter createRouter(BuildContext context) {
         profilePassword
       ],
       redirect: (context, state) {
-        if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
+        if (!authService.isAuthenticated()) {
           return '/';
         }
         return null;
@@ -100,8 +98,7 @@ GoRouter createRouter(BuildContext context) {
       privateRoutes,
     ],
     redirect: (context, state) {
-      final isAuthenticated =
-          authService.isSignedIn && userProvider.isAuthenticated();
+      final isAuthenticated = authService.isAuthenticated();
       final isLoggingIn = state.matchedLocation == '/';
       final isRegistering = state.matchedLocation == '/register';
       final isPublicRoute = state.matchedLocation == '/';

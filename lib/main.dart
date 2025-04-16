@@ -32,13 +32,14 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  final _authService = AuthService();
   final _userProvider = UserProvider();
+  late AuthService _authService;
   late ProgramService _programService;
 
   @override
   void initState() {
     super.initState();
+    _authService = AuthService(_userProvider);
     _programService = ProgramService(_userProvider);
     _initServices();
   }

@@ -14,6 +14,7 @@ class ProfileView extends StatelessWidget {
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.0),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const UserDetails(),
           const ProfileSettings(),

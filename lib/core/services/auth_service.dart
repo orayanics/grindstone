@@ -13,6 +13,9 @@ import 'package:grindstone/core/model/user.dart' as my_user;
 
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final UserProvider _userProvider;
+
+  AuthService(this._userProvider);
 
   bool get isSignedIn => _auth.currentUser != null;
   User? get currentUser => _auth.currentUser;
@@ -155,8 +158,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  bool isAuthenticated(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    return isSignedIn && userProvider.isAuthenticated();
+  bool isAuthenticated() {
+    return isSignedIn && _userProvider.isAuthenticated();
   }
 }
