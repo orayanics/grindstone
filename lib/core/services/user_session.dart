@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProvider with ChangeNotifier {
   String? _userId;
@@ -23,27 +24,27 @@ class UserProvider with ChangeNotifier {
   bool get isInitialized => _initialized;
   bool get isLoading => _isLoading;
 
-  //  user session from Firebase and Shared Preferences
   Future<void> initialize() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // First check Firebase Auth current user
       final firebaseUser = FirebaseAuth.instance.currentUser;
 
       if (firebaseUser != null) {
-        setUserId(firebaseUser.uid);
+        await setUserId(firebaseUser.uid);
+        await _fetchUserProfileData(firebaseUser.uid);
       } else {
         final prefs = await SharedPreferences.getInstance();
         final savedUserId = prefs.getString('userId');
 
         if (savedUserId != null && savedUserId.isNotEmpty) {
-          // if the saved user is still valid in Firebase
           try {
             await FirebaseAuth.instance.authStateChanges().first;
             if (FirebaseAuth.instance.currentUser != null) {
-              setUserId(savedUserId);
+              await setUserId(savedUserId);
+              // Fetch user profile data from Firestore
+              await _fetchUserProfileData(savedUserId);
             } else {
               await clearUserId();
             }
@@ -58,6 +59,26 @@ class UserProvider with ChangeNotifier {
       _initialized = true;
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _fetchUserProfileData(String uid) async {
+    try {
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (userDoc.exists) {
+        final userData = userDoc.data();
+        await setUserProfile(
+          firstName: userData?['firstName'] ?? 'No fetch',
+          lastName: userData?['lastName'] ?? 'No fetch',
+          age: userData?['age'] ?? 0,
+          height: userData?['height'] ?? 0.0,
+          weight: userData?['weight'] ?? 0.0,
+        );
+      }
+    } catch (e) {
+      debugPrint('Failed to fetch user profile data: $e');
     }
   }
 

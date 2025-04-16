@@ -13,8 +13,6 @@ GoRouter createRouter(BuildContext context) {
   final userProvider = Provider.of<UserProvider>(context, listen: false);
 
   // Public routes
-  final baseRoute = GoRoute(path: '/', builder: (context, state) => HomeView());
-
   final registerRoute =
       GoRoute(path: '/register', builder: (context, state) => RegisterView());
 
@@ -22,6 +20,9 @@ GoRouter createRouter(BuildContext context) {
       GoRoute(path: '/', builder: (context, state) => LoginView());
 
   // Private routes
+  final homeRoute =
+      GoRoute(path: '/home', builder: (context, state) => HomeView());
+
   final profileRoute =
       GoRoute(path: '/profile', builder: (context, state) => ProfileView());
 
@@ -60,7 +61,6 @@ GoRouter createRouter(BuildContext context) {
   final publicRoutes = ShellRoute(
       builder: (context, state, child) => PublicLayout(child: child),
       routes: [
-        baseRoute,
         registerRoute,
         loginRoute,
       ],
@@ -75,6 +75,7 @@ GoRouter createRouter(BuildContext context) {
   final privateRoutes = ShellRoute(
       builder: (context, state, child) => PrivateLayout(child: child),
       routes: [
+        homeRoute,
         profileRoute,
         createProgramRoute,
         indexProgramRoute,

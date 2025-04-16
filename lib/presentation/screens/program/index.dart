@@ -68,93 +68,96 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
     final userProvider = Provider.of<UserProvider>(context);
 
     if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
-      return Scaffold(
-        appBar: AppBar(title: Text('Exercise Programs')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('You must be logged in to view programs'),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => context.go(AppRoutes.login),
-                child: Text('Go to Login'),
-              ),
-            ],
-          ),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('You must be logged in to view programs'),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => context.go(AppRoutes.login),
+              child: Text('Go to Login'),
+            ),
+          ],
         ),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(title: Text('Exercise Programs')),
-      body: RefreshIndicator(
-        onRefresh: _refreshPrograms,
-        child: programService.isLoading && programService.programs.isEmpty
-            ? Center(child: CircularProgressIndicator())
-            : programService.errorMessage != null
-                ? Center(child: Text('Error: ${programService.errorMessage}'))
-                : programService.programs.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('No programs found'),
-                            SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () =>
-                                  context.go(AppRoutes.createProgram),
-                              child: Text('Create New Program'),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: programService.programs.length,
-                        itemBuilder: (context, index) {
-                          final program = programService.programs[index];
-                          return Card(
-                            margin: EdgeInsets.all(8.0),
-                            child: InkWell(
-                              onTap: () async {
-                                await context.push(
-                                  '/program-details/${program.id}',
-                                  extra: program.programName,
-                                );
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                padding: EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      program.programName,
-                                      style: TextStyle(
-                                        fontSize: 18.0,
-                                        fontWeight: FontWeight.bold,
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: _refreshPrograms,
+          child: programService.isLoading && programService.programs.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : programService.errorMessage != null
+                  ? Center(child: Text('Error: ${programService.errorMessage}'))
+                  : programService.programs.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('No programs found'),
+                              SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () =>
+                                    context.go(AppRoutes.createProgram),
+                                child: Text('Create New Program'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: programService.programs.length,
+                          itemBuilder: (context, index) {
+                            final program = programService.programs[index];
+                            return Card(
+                              margin: EdgeInsets.all(8.0),
+                              child: InkWell(
+                                onTap: () async {
+                                  await context.push(
+                                    '/program-details/${program.id}',
+                                    extra: program.programName,
+                                  );
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        program.programName,
+                                        style: TextStyle(
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(height: 8.0),
-                                    Text('Day: ${program.dayOfExecution}'),
-                                    Text(
-                                        'Exercises: ${program.exercises.length}'),
-                                  ],
+                                      SizedBox(height: 8.0),
+                                      Text('Day: ${program.dayOfExecution}'),
+                                      Text(
+                                          'Exercises: ${program.exercises.length}'),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go(AppRoutes.createProgram),
-        tooltip: 'Create New Program',
-        child: Icon(Icons.add),
-      ),
+                            );
+                          },
+                        ),
+        ),
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton(
+            onPressed: () => context.go(AppRoutes.createProgram),
+            tooltip: 'Create New Program',
+            child: Icon(Icons.add),
+          ),
+        ),
+      ],
     );
   }
 }

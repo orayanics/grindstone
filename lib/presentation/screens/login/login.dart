@@ -12,9 +12,12 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(36.0),
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(
+        horizontal: 36.0,
+      ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           LogoHeader(
@@ -64,12 +67,12 @@ class LoginForm extends StatelessWidget {
           isPrimary: true,
           controller: _passwordController,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         const Divider(
           color: Colors.white,
           height: 1,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: PrimaryButton(

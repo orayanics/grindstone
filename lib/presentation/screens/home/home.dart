@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:grindstone/core/exports/screens.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -33,7 +32,7 @@ class ButtonContainer extends StatelessWidget {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [LoginView()],
+        children: [const Text('Home')],
       ),
     );
   }

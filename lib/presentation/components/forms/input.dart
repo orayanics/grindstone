@@ -475,9 +475,8 @@ class _FormInputNumberState extends State<FormInputNumber> {
             ),
             child: TextFormField(
               decoration: InputDecoration(
-                hintText: widget.placeholder.isNotEmpty
-                    ? widget.placeholder
-                    : 'Error fetching',
+                hintText:
+                    widget.placeholder.isNotEmpty ? widget.placeholder : '0',
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 errorStyle: const TextStyle(

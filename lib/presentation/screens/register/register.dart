@@ -121,7 +121,6 @@ class _RegisterFormState extends State<RegisterForm> {
   String _sex = 'Male';
 
   int _currentStep = 0;
-  bool _isLoading = false;
   String? _passwordError;
 
   final List<String> _sexOptions = ['Male', 'Female', 'Other'];
@@ -184,9 +183,6 @@ class _RegisterFormState extends State<RegisterForm> {
   Future<void> _completeRegistration() async {
     if (!_validateCurrentStep()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
     widget.onLoadingChanged(true);
 
     try {
@@ -205,9 +201,6 @@ class _RegisterFormState extends State<RegisterForm> {
       FailToast.show("Something went wrong: ${e.toString()}");
     }
 
-    setState(() {
-      _isLoading = false;
-    });
     widget.onLoadingChanged(false);
   }
 

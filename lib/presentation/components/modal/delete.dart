@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:grindstone/core/config/colors.dart';
+import 'package:grindstone/core/exports/components.dart';
 
 class ConfirmDeleteDialog extends StatelessWidget {
   final String title;
@@ -17,16 +19,42 @@ class ConfirmDeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(title),
-      content: Text(content),
-      actions: [
-        TextButton(
-          onPressed: onCancel,
-          child: const Text('Cancel'),
+      backgroundColor: white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 1,
+      title: Text('Confirm Delete',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: accentRed,
+              )),
+      content: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(content,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: textLight,
+                    )),
+            const SizedBox(height: 16),
+            Text('This action cannot be undone.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: textLight,
+                    )),
+          ],
         ),
-        TextButton(
-          onPressed: onDelete,
-          child: const Text('Delete'),
+      ),
+      actions: [
+        SizedBox(
+          width: double.infinity,
+          child: AccentButton(
+            onPressed: onDelete,
+            label: 'Delete',
+          ),
         ),
       ],
     );

@@ -35,7 +35,6 @@ class _MainAppState extends State<MainApp> {
   final _authService = AuthService();
   final _userProvider = UserProvider();
   late ProgramService _programService;
-  bool _initialized = false;
 
   @override
   void initState() {
@@ -58,10 +57,6 @@ class _MainAppState extends State<MainApp> {
     if (_userProvider.isAuthenticated()) {
       _programService.startProgramsListener();
     }
-
-    setState(() {
-      _initialized = true;
-    });
   }
 
   @override

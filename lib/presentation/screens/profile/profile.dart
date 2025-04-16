@@ -130,11 +130,10 @@ class ProfileSettings extends StatelessWidget {
                   ),
             ),
           ),
-          _settingsRow(Icons.person_2_rounded, 'Update Profile Information',
-              () {
+          _settingsRow(Icons.person_2_rounded, 'Profile Information', () {
             GoRouter.of(context).push(AppRoutes.updatePersonal);
           }),
-          _settingsRow(Icons.health_and_safety, 'Update Health Data', () {
+          _settingsRow(Icons.health_and_safety, 'Health Data', () {
             GoRouter.of(context).push(AppRoutes.updateHealth);
           }),
           _settingsRow(Icons.password_rounded, 'Change Password', () {

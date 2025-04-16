@@ -21,37 +21,39 @@ class LogoHeader extends StatelessWidget {
                   height: 80,
                   width: 80,
                 ),
-                SizedBox(height: 24),
-                Text(
-                  'Are you g?',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineMedium
-                      ?.copyWith(color: isPurple ? Colors.black : Colors.white),
-                ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                const SizedBox(height: 18),
+                Center(
                   child: Text(
-                      isPurple
-                          ? 'Fill out the following details'
-                          : 'Login to access your',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: isPurple ? textLight : white)),
+                    'Are you g?',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: isPurple ? Colors.black : Colors.white),
+                  ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Center(
+                      child: Text(
+                          isPurple
+                              ? 'Fill out the following details'
+                              : 'Login to access your',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: isPurple ? textLight : white,
+                                  ),
+                          textAlign: TextAlign.center),
+                    )),
+                const SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                       isPurple
                           ? 'to get started with your account!'
                           : 'programs and track progress',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: isPurple ? textLight : white)),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: isPurple ? textLight : white,
+                          ),
+                      textAlign: TextAlign.center),
                 ),
               ],
             )));

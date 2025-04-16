@@ -41,14 +41,13 @@ class _PrivateLayoutState extends State<PrivateLayout> {
 
     switch (index) {
       case 0:
-        // TODO: Add Dashboard/Home
-        context.go(AppRoutes.profile);
+        GoRouter.of(context).go(AppRoutes.home);
         break;
       case 1:
-        context.go(AppRoutes.programs);
+        GoRouter.of(context).go(AppRoutes.programs);
         break;
       case 2:
-        context.go(AppRoutes.profile);
+        GoRouter.of(context).go(AppRoutes.profile);
         break;
     }
   }
@@ -72,10 +71,6 @@ class _PrivateLayoutState extends State<PrivateLayout> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: accentPurple),
-          onPressed: () => GoRouter.of(context).go(AppRoutes.home),
-        ),
         title: Center(
           child: Text(
             'grindstone',
@@ -92,22 +87,28 @@ class _PrivateLayoutState extends State<PrivateLayout> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: white,
+        selectedItemColor: accentPurple,
+        unselectedItemColor: textDark,
+        showUnselectedLabels: false,
+        showSelectedLabels: false,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home_rounded),
             label: 'Home',
+            tooltip: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
+            icon: Icon(Icons.fitness_center_rounded),
             label: 'Programs',
+            tooltip: 'Programs',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.settings_rounded),
             label: 'Profile',
+            tooltip: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).primaryColor,
         onTap: _onItemTapped,
       ),
     );

@@ -39,6 +39,60 @@ class ProgramService with ChangeNotifier {
     return currentUser != null && userProvider.isAuthenticated();
   }
 
+  String? _getCurrentUserId() {
+    if (!_isAuthenticated()) {
+      _setError('User not authenticated');
+      return null;
+    }
+
+    final currentUserId = userProvider.getUid();
+    if (currentUserId.isEmpty) {
+      _setError('Cannot get current user ID');
+      return null;
+    }
+
+    return currentUserId;
+  }
+
+  void _setError(String message) {
+    _errorMessage = message;
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  void _startLoading() {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  void _endLoading() {
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  /// handle crud with try-catch
+  Future<T?> _executeWithErrorHandling<T>(
+    Future<T?> Function() operation,
+    String errorPrefix,
+  ) async {
+    if (!_isAuthenticated()) {
+      _setError('User not authenticated');
+      return null;
+    }
+
+    _startLoading();
+
+    try {
+      final result = await operation();
+      _endLoading();
+      return result;
+    } catch (e) {
+      _setError('$errorPrefix: $e');
+      return null;
+    }
+  }
+
   Future<bool> _hasAccessToProgram(String programId) async {
     if (!_isAuthenticated()) return false;
 
@@ -52,29 +106,17 @@ class ProgramService with ChangeNotifier {
 
       return data['userId'] == userProvider.userId;
     } catch (e) {
-      _errorMessage = 'Failed to verify program access: $e';
+      _setError('Failed to verify program access: $e');
       return false;
     }
   }
 
   void startProgramsListener() {
-    if (!_isAuthenticated()) {
-      _errorMessage = 'User not authenticated';
-      notifyListeners();
-      return;
-    }
-
-    final currentUserId = userProvider.getUid();
-    if (currentUserId.isEmpty) {
-      _errorMessage = 'Cannot get current user ID';
-      notifyListeners();
-      return;
-    }
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId == null) return;
 
     _cancelSubscriptions();
-
-    _isLoading = true;
-    notifyListeners();
+    _startLoading();
 
     try {
       _programsSubscription = _firestore
@@ -87,333 +129,233 @@ class ProgramService with ChangeNotifier {
             .toList();
 
         _programs = programs;
-        _isLoading = false;
-        _errorMessage = null;
+        _endLoading();
 
         for (var program in programs) {
           _programCache[program.id] = program;
         }
-
-        notifyListeners();
       }, onError: (error) {
-        _errorMessage = 'Failed to listen for programs: $error';
-        _isLoading = false;
-        notifyListeners();
+        _setError('Failed to listen for programs: $error');
       });
     } catch (e) {
-      _errorMessage = 'Failed to start programs listener: $e';
-      _isLoading = false;
-      notifyListeners();
+      _setError('Failed to start programs listener: $e');
     }
   }
 
-  // CREATE
-  // Create a new exercise program
   Future<bool> createProgram(ExerciseProgram program) async {
-    if (!_isAuthenticated()) {
-      _errorMessage = 'User not authenticated';
-      notifyListeners();
-      return false;
-    }
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId == null) return false;
 
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+    return await _executeWithErrorHandling<bool>(
+          () async {
+            program = ExerciseProgram(
+              id: program.id,
+              userId: currentUserId,
+              programName: program.programName,
+              dayOfExecution: program.dayOfExecution,
+              exercises: program.exercises,
+            );
 
-    try {
-      final currentUserId = userProvider.getUid();
-      if (currentUserId.isEmpty) {
-        _errorMessage = 'Cannot get current user ID';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
+            await _firestore
+                .collection('exercisePrograms')
+                .doc(program.id)
+                .set(program.toMap());
 
-      program = ExerciseProgram(
-        id: program.id,
-        userId: currentUserId,
-        programName: program.programName,
-        dayOfExecution: program.dayOfExecution,
-        exercises: program.exercises,
-      );
+            _programCache[program.id] = program;
 
-      await _firestore
-          .collection('exercisePrograms')
-          .doc(program.id)
-          .set(program.toMap());
+            if (_programsSubscription == null) {
+              _programs.add(program);
+            }
 
-      _programCache[program.id] = program;
-
-      if (_programsSubscription == null) {
-        _programs.add(program);
-      }
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = 'Failed to create program: $e';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+            return true;
+          },
+          'Failed to create program',
+        ) ??
+        false;
   }
 
-  // READ
-  // Fetch all exercise programs for a user with pagination
-  Future<void> fetchPrograms(
-      {DocumentSnapshot? lastDoc, int limit = 10, bool refresh = false}) async {
-    if (!_isAuthenticated()) {
-      _errorMessage = 'User not authenticated';
-      notifyListeners();
-      return;
-    }
+  Future<void> fetchPrograms({
+    DocumentSnapshot? lastDoc,
+    int limit = 10,
+    bool refresh = false,
+  }) async {
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId == null) return;
 
     if (_programsSubscription != null && !refresh) {
       return;
     }
 
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+    await _executeWithErrorHandling<void>(
+      () async {
+        Query query = _firestore
+            .collection('exercisePrograms')
+            .where('userId', isEqualTo: currentUserId)
+            .limit(limit);
 
-    try {
-      final currentUserId = userProvider.getUid();
-      if (currentUserId.isEmpty) {
-        _errorMessage = 'Cannot get current user ID';
-        _isLoading = false;
-        notifyListeners();
-        return;
-      }
+        if (lastDoc != null) {
+          query = query.startAfterDocument(lastDoc);
+        }
 
-      Query query = _firestore
-          .collection('exercisePrograms')
-          .where('userId', isEqualTo: currentUserId)
-          .limit(limit);
-      if (lastDoc != null) {
-        query = query.startAfterDocument(lastDoc);
-      }
-      final snapshot = await query.get();
+        final snapshot = await query.get();
 
-      final programs = snapshot.docs
-          .map((doc) =>
-              ExerciseProgram.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
+        final programs = snapshot.docs
+            .map((doc) =>
+                ExerciseProgram.fromMap(doc.data() as Map<String, dynamic>))
+            .toList();
 
-      _programs = programs;
+        _programs = programs;
 
-      for (var program in programs) {
-        _programCache[program.id] = program;
-      }
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = 'Failed to fetch programs: $e';
-      _isLoading = false;
-      notifyListeners();
-    }
+        // Update cache
+        for (var program in programs) {
+          _programCache[program.id] = program;
+        }
+      },
+      'Failed to fetch programs',
+    );
   }
 
-  // Fetch a specific program by ID
-  Future<ExerciseProgram?> fetchProgramById(String programId,
-      {bool refresh = false}) async {
-    if (!_isAuthenticated()) {
-      _errorMessage = 'User not authenticated';
-      notifyListeners();
-      return null;
-    }
-
-    // no force refresh and have the program in cache, return
+  Future<ExerciseProgram?> fetchProgramById(
+    String programId, {
+    bool refresh = false,
+  }) async {
     if (!refresh && _programCache.containsKey(programId)) {
       return _programCache[programId];
     }
 
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+    return await _executeWithErrorHandling<ExerciseProgram?>(
+      () async {
+        final doc = await _firestore
+            .collection('exercisePrograms')
+            .doc(programId)
+            .get();
 
-    try {
-      final doc =
-          await _firestore.collection('exercisePrograms').doc(programId).get();
-      if (doc.exists) {
-        final data = doc.data();
+        if (doc.exists) {
+          final data = doc.data();
 
-        final programUserId = data?['userId'] as String?;
-        if (programUserId != userProvider.userId) {
-          _errorMessage = 'You do not have access to this program';
-          _isLoading = false;
-          notifyListeners();
-          return null;
+          final programUserId = data?['userId'] as String?;
+          if (programUserId != userProvider.userId) {
+            throw Exception('You do not have access to this program');
+          }
+
+          final program = ExerciseProgram.fromMap(data as Map<String, dynamic>);
+          _programCache[programId] = program;
+
+          final programIndex = _programs.indexWhere((p) => p.id == programId);
+          if (programIndex != -1) {
+            _programs[programIndex] = program;
+          }
+
+          return program;
+        } else {
+          throw Exception('Program not found');
         }
-
-        final program = ExerciseProgram.fromMap(data as Map<String, dynamic>);
-
-        _programCache[programId] = program;
-
-        final programIndex = _programs.indexWhere((p) => p.id == programId);
-        if (programIndex != -1) {
-          _programs[programIndex] = program;
-        }
-
-        _isLoading = false;
-        notifyListeners();
-        return program;
-      } else {
-        _errorMessage = 'Program not found';
-        _isLoading = false;
-        notifyListeners();
-        return null;
-      }
-    } catch (e) {
-      _errorMessage = 'Failed to fetch program: $e';
-      _isLoading = false;
-      notifyListeners();
-      return null;
-    }
+      },
+      'Failed to fetch program',
+    );
   }
 
-  // UPDATE
-  // Add an exercise to an existing program
   Future<bool> addExerciseToProgram(
-      String programId, List<Map<String, dynamic>> exercises) async {
-    if (!_isAuthenticated()) {
-      _errorMessage = 'User not authenticated';
-      notifyListeners();
-      return false;
-    }
-
+    String programId,
+    List<Map<String, dynamic>> exercises,
+  ) async {
     if (!await _hasAccessToProgram(programId)) {
-      _errorMessage = 'You do not have access to this program';
-      notifyListeners();
+      _setError('You do not have access to this program');
       return false;
     }
 
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+    return await _executeWithErrorHandling<bool>(
+          () async {
+            await _firestore
+                .collection('exercisePrograms')
+                .doc(programId)
+                .update({
+              'exercises': FieldValue.arrayUnion(exercises),
+            });
 
-    try {
-      await _firestore.collection('exercisePrograms').doc(programId).update({
-        'exercises': FieldValue.arrayUnion(exercises),
-      });
+            if (_programsSubscription == null) {
+              await fetchProgramById(programId, refresh: true);
+            }
 
-      if (_programsSubscription == null) {
-        await fetchProgramById(programId, refresh: true);
-      }
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = 'Failed to add exercise: $e';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+            return true;
+          },
+          'Failed to add exercise',
+        ) ??
+        false;
   }
 
-  // DELETE
-  // Delete a program
   Future<bool> deleteProgram(String programId) async {
-    if (!_isAuthenticated()) {
-      _errorMessage = 'User not authenticated';
-      notifyListeners();
-      return false;
-    }
-
     if (!await _hasAccessToProgram(programId)) {
-      _errorMessage = 'You do not have access to this program';
-      notifyListeners();
+      _setError('You do not have access to this program');
       return false;
     }
 
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+    return await _executeWithErrorHandling<bool>(
+          () async {
+            await _firestore
+                .collection('exercisePrograms')
+                .doc(programId)
+                .delete();
 
-    try {
-      await _firestore.collection('exercisePrograms').doc(programId).delete();
+            _programCache.remove(programId);
 
-      _programCache.remove(programId);
+            if (_programsSubscription == null) {
+              _programs.removeWhere((program) => program.id == programId);
+            }
 
-      if (_programsSubscription == null) {
-        _programs.removeWhere((program) => program.id == programId);
-      }
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = 'Failed to delete program: $e';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+            return true;
+          },
+          'Failed to delete program',
+        ) ??
+        false;
   }
 
-  // Delete an exercise from a program
   Future<bool> deleteExercise(String programId, String exerciseId) async {
-    if (!_isAuthenticated()) {
-      _errorMessage = 'User not authenticated';
-      notifyListeners();
-      return false;
-    }
-
     if (!await _hasAccessToProgram(programId)) {
-      _errorMessage = 'You do not have access to this program';
-      notifyListeners();
+      _setError('You do not have access to this program');
       return false;
     }
 
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+    return await _executeWithErrorHandling<bool>(
+          () async {
+            final doc = await _firestore
+                .collection('exercisePrograms')
+                .doc(programId)
+                .get();
 
-    try {
-      final doc =
-          await _firestore.collection('exercisePrograms').doc(programId).get();
+            if (!doc.exists) {
+              throw Exception('Program not found');
+            }
 
-      if (!doc.exists) {
-        _errorMessage = 'Program not found';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
+            final data = doc.data();
+            if (data == null || data['exercises'] == null) {
+              throw Exception('No exercises found in the program');
+            }
 
-      final data = doc.data();
-      if (data == null || data['exercises'] == null) {
-        _errorMessage = 'No exercises found in the program';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
+            final exercises =
+                List<Map<String, dynamic>>.from(data['exercises']);
+            final updatedExercises = exercises.where((exercise) {
+              return exercise['exerciseId'] != exerciseId;
+            }).toList();
 
-      final exercises = List<Map<String, dynamic>>.from(data['exercises']);
-      final updatedExercises = exercises.where((exercise) {
-        return exercise['exerciseId'] != exerciseId;
-      }).toList();
+            await _firestore
+                .collection('exercisePrograms')
+                .doc(programId)
+                .update({
+              'exercises': updatedExercises,
+            });
 
-      await _firestore.collection('exercisePrograms').doc(programId).update({
-        'exercises': updatedExercises,
-      });
+            if (_programsSubscription == null) {
+              await fetchProgramById(programId, refresh: true);
+            }
 
-      if (_programsSubscription == null) {
-        await fetchProgramById(programId, refresh: true);
-      }
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = 'Failed to delete exercise: $e';
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+            return true;
+          },
+          'Failed to delete exercise',
+        ) ??
+        false;
   }
 
-  // Force refresh all programs
   Future<void> refreshPrograms() async {
     if (_programsSubscription != null) {
       return;
@@ -422,7 +364,6 @@ class ProgramService with ChangeNotifier {
     await fetchPrograms(refresh: true);
   }
 
-  // Force refresh a specific program
   Future<ExerciseProgram?> refreshProgram(String programId) async {
     return await fetchProgramById(programId, refresh: true);
   }
