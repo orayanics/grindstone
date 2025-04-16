@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grindstone/core/config/colors.dart';
 
 class ProgramActionButtons extends StatelessWidget {
   final String programId;
@@ -22,15 +23,25 @@ class ProgramActionButtons extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             FloatingActionButton(
+              elevation: 0,
+              backgroundColor: accentPurple,
               heroTag: "addExercises",
               onPressed: onUpdateExercises,
-              child: Icon(Icons.add),
+              child: Icon(
+                Icons.add_rounded,
+                color: white,
+              ),
             ),
             SizedBox(height: 16.0),
             FloatingActionButton(
+              elevation: 0,
+              backgroundColor: accentPurple,
               heroTag: "deleteProgram",
               onPressed: onDeleteProgram,
-              child: Icon(Icons.delete),
+              child: Icon(
+                Icons.delete_rounded,
+                color: white,
+              ),
             ),
           ],
         ),

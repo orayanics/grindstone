@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grindstone/core/model/exercise_program.dart';
+import 'package:grindstone/core/config/colors.dart';
 
 class ProgramInfoCard extends StatelessWidget {
   final ExerciseProgram program;
@@ -20,36 +21,41 @@ class ProgramInfoCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      program.programName,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
+                  Text(
+                    program.programName,
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  Chip(
-                    label: Text('Day: ${program.dayOfExecution}'),
-                    backgroundColor: Theme.of(context).primaryColor,
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Last Update ',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: accentPurple,
+                                  ),
+                        ),
+                        TextSpan(
+                          text: 'on ${program.dayOfExecution}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: textLight,
+                                  ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
               const Divider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Exercises',
-                    style: const TextStyle(
-                        fontSize: 16.0, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '${program.exercises.length}',
-                    style: const TextStyle(
-                        fontSize: 16.0, fontWeight: FontWeight.bold),
-                  ),
-                ],
+              Text(
+                'These are your exercises for the program.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: textLight,
+                    ),
               ),
             ],
           ),
