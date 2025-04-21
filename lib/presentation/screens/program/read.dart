@@ -138,7 +138,11 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
       return;
     }
     bool success = false;
-    // delete program
+
+    setState(() {
+      _isLoading = true;
+    });
+
     if (type == 'program') {
       success = await programService.deleteProgram(widget.programId);
     } else if (type == 'exercise') {
@@ -149,11 +153,16 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
     if (!mounted) return;
 
     if (success) {
+      GoRouter.of(context).pop();
       GoRouter.of(context).go(AppRoutes.programs);
       SuccessToast.show('Program deleted successfully');
     } else {
       FailToast.show(programService.errorMessage ?? 'Failed to delete program');
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _showDeleteDialog(String type, String exerciseId) {

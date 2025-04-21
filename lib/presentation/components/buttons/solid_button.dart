@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grindstone/core/config/colors.dart';
 
 class PrimaryButton extends StatelessWidget {
-  final String label;
+  final dynamic label;
   final VoidCallback onPressed;
 
   const PrimaryButton({
@@ -23,13 +23,13 @@ class PrimaryButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: style,
-      child: Text(label),
+      child: label is CircularProgressIndicator ? label : Text(label),
     );
   }
 }
 
 class AccentButton extends StatelessWidget {
-  final String label;
+  final dynamic label;
   final VoidCallback onPressed;
 
   const AccentButton({
@@ -50,7 +50,7 @@ class AccentButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: style,
-      child: Text(label),
+      child: label is CircularProgressIndicator ? label : Text(label),
     );
   }
 }

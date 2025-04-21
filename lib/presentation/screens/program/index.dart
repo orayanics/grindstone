@@ -3,7 +3,6 @@ import 'package:grindstone/core/services/program_service.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/services/auth_service.dart';
-import 'package:grindstone/core/services/user_session.dart';
 import 'package:grindstone/core/exports/components.dart';
 import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/config/colors.dart';

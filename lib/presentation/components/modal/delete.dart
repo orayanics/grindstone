@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grindstone/core/config/colors.dart';
 import 'package:grindstone/core/exports/components.dart';
 
-class ConfirmDeleteDialog extends StatelessWidget {
+class ConfirmDeleteDialog extends StatefulWidget {
   final String title;
   final String content;
   final VoidCallback onDelete;
@@ -15,6 +15,20 @@ class ConfirmDeleteDialog extends StatelessWidget {
     required this.onDelete,
     required this.onCancel,
   });
+
+  @override
+  State<ConfirmDeleteDialog> createState() => _ConfirmDeleteDialogState();
+}
+
+class _ConfirmDeleteDialogState extends State<ConfirmDeleteDialog> {
+  bool isLoading = false;
+
+  void _handleDelete() {
+    setState(() {
+      isLoading = true;
+    });
+    widget.onDelete();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +48,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(content,
+            Text(widget.content,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: textLight,
@@ -52,8 +66,12 @@ class ConfirmDeleteDialog extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: AccentButton(
-            onPressed: onDelete,
-            label: 'Delete',
+            onPressed: isLoading ? () {} : _handleDelete,
+            label: isLoading
+                ? const CircularProgressIndicator(
+                    color: white,
+                  )
+                : 'Delete',
           ),
         ),
       ],

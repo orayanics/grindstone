@@ -1,7 +1,3 @@
-// TODO: Refactor the following:
-// implement multiple selection from search results
-// lift up selectedexercises
-
 import 'package:flutter/material.dart';
 import 'package:grindstone/core/services/exercise_api.dart';
 import 'package:grindstone/core/exports/components.dart';
@@ -32,7 +28,7 @@ class ExerciseSearchDialog extends StatefulWidget {
 
 class _ExerciseSearchDialogState extends State<ExerciseSearchDialog> {
   List<Map<String, dynamic>> _searchResults = [];
-  List<Map<String, dynamic>> _selectedExercises = [];
+  final List<Map<String, dynamic>> _selectedExercises = [];
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
 
@@ -68,16 +64,18 @@ class _ExerciseSearchDialogState extends State<ExerciseSearchDialog> {
 
   void _toggleExerciseSelection(Map<String, dynamic> exercise) {
     setState(() {
-      if (_isExerciseSelected(exercise)) {
-        _selectedExercises.removeWhere((e) => e['id'] == exercise['id']);
-      } else {
+      if (!_isExerciseSelected(exercise)) {
         _selectedExercises.add(exercise);
+      } else {
+        _selectedExercises
+            .removeWhere((e) => e['exerciseId'] == exercise['exerciseId']);
       }
     });
   }
 
   bool _isExerciseSelected(Map<String, dynamic> exercise) {
-    return _selectedExercises.any((e) => e['id'] == exercise['id']);
+    return _selectedExercises
+        .any((e) => e['exerciseId'] == exercise['exerciseId']);
   }
 
   @override
@@ -129,54 +127,37 @@ class _ExerciseSearchDialogState extends State<ExerciseSearchDialog> {
               ),
             if (_selectedExercises.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: lightGray,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Selected (${_selectedExercises.length}):',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 8,
-                      children: _selectedExercises
-                          .map((e) => Chip(
-                                label: Text(e['name']),
-                                deleteIcon: const Icon(Icons.close, size: 16),
-                                onDeleted: () => _toggleExerciseSelection(e),
-                              ))
-                          .toList(),
-                    ),
-                  ],
-                ),
+              Center(
+                child: Text('Selected (${_selectedExercises.length}):',
+                    style: Theme.of(context).textTheme.bodyMedium),
               ),
+              const SizedBox(height: 8),
+              Flexible(
+                  child: Container(
+                color: white,
+                child: ListView.builder(
+                    itemCount: _selectedExercises.length,
+                    itemBuilder: (context, index) => Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          child: Chip(
+                            label: Text(_selectedExercises[index]['name']),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () => _toggleExerciseSelection(
+                                _selectedExercises[index]),
+                          ),
+                        )),
+              )),
             ],
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _selectedExercises.isEmpty
-                      ? null
-                      : () => widget.onSelectExercises(_selectedExercises),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accentRed,
-                    foregroundColor: white,
-                  ),
-                  child: const Text('Add Selected'),
-                ),
-              ],
+            AccentButton(
+              onPressed: () {
+                if (_selectedExercises.isEmpty) {
+                  return;
+                }
+                widget.onSelectExercises(_selectedExercises);
+              },
+              label: 'Add Selected',
             ),
           ],
         ),
@@ -197,7 +178,8 @@ class _ExerciseSearchResults extends StatelessWidget {
   });
 
   bool _isSelected(Map<String, dynamic> exercise) {
-    return selectedExercises.any((e) => e['id'] == exercise['id']);
+    return selectedExercises
+        .any((e) => e['exerciseId'] == exercise['exerciseId']);
   }
 
   @override
