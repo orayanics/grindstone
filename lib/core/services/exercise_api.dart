@@ -41,11 +41,18 @@ class ExerciseApi {
 
   static Future<Map<String, String>> fetchExerciseById(
       String exerciseId) async {
+    print('${_baseUrl ?? ''}/exercises/$exerciseId');
     return _handleApiCall(
         http.get(Uri.parse('${_baseUrl ?? ''}/exercises/$exerciseId')),
         (data) => {
               'exerciseId': data['data']['exerciseId'].toString(),
               'name': data['data']['name'].toString(),
+              'gifUrl': data['data']['gifUrl'].toString(),
+              'targetMuscles': data['data']['targetMuscles'].toString(),
+              'bodyParts': data['data']['bodyParts'].toString(),
+              'equipments': data['data']['equipments'].toString(),
+              'secondaryMuscles': data['data']['secondaryMuscles'].toString(),
+              'instructions': data['data']['instructions'].toString(),
             });
   }
 }

@@ -4,11 +4,13 @@ import 'package:grindstone/core/config/colors.dart';
 class ExerciseListItem extends StatelessWidget {
   final Map<String, String> exercise;
   final VoidCallback onDelete;
+  final VoidCallback onSelect;
 
   const ExerciseListItem({
     super.key,
     required this.exercise,
     required this.onDelete,
+    required this.onSelect,
   });
 
   @override
@@ -29,6 +31,7 @@ class ExerciseListItem extends StatelessWidget {
                     offset: Offset(1, 0))
               ]),
           child: ListTile(
+            onTap: onSelect,
             title: Text(exercise['name'] ?? 'Unnamed Exercise'),
             subtitle: Text(exercise['sets'] ?? '0 sets'),
             leading: IconButton(

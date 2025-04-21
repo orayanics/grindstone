@@ -55,6 +55,13 @@ GoRouter createRouter(BuildContext context) {
       path: AppRoutes.changePassword,
       builder: (context, state) => ProfilePasswordView());
 
+  final exerciseDetails = GoRoute(
+      path: AppRoutes.exerciseDetails,
+      builder: (context, state) {
+        final exerciseId = state.pathParameters['exerciseId'];
+        return ExerciseDetails(exerciseId: exerciseId!);
+      });
+
   // Public shell route
   final publicRoutes = ShellRoute(
       builder: (context, state, child) => PublicLayout(child: child),
@@ -80,7 +87,8 @@ GoRouter createRouter(BuildContext context) {
         programDetailsRoute,
         profileHealth,
         profilePersonal,
-        profilePassword
+        profilePassword,
+        exerciseDetails,
       ],
       redirect: (context, state) {
         if (!authService.isAuthenticated()) {
