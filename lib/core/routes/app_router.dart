@@ -5,16 +5,12 @@ import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-import 'package:grindstone/core/services/user_session.dart';
 
 // router with context and providers
 GoRouter createRouter(BuildContext context) {
   final authService = Provider.of<AuthService>(context, listen: false);
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
 
   // Public routes
-  final baseRoute = GoRoute(path: '/', builder: (context, state) => HomeView());
-
   final registerRoute =
       GoRoute(path: '/register', builder: (context, state) => RegisterView());
 
@@ -22,6 +18,9 @@ GoRouter createRouter(BuildContext context) {
       GoRoute(path: '/', builder: (context, state) => LoginView());
 
   // Private routes
+  final homeRoute =
+      GoRoute(path: '/home', builder: (context, state) => HomeView());
+
   final profileRoute =
       GoRoute(path: '/profile', builder: (context, state) => ProfileView());
 
@@ -56,16 +55,22 @@ GoRouter createRouter(BuildContext context) {
       path: AppRoutes.changePassword,
       builder: (context, state) => ProfilePasswordView());
 
+  final exerciseDetails = GoRoute(
+      path: AppRoutes.exerciseDetails,
+      builder: (context, state) {
+        final exerciseId = state.pathParameters['exerciseId'];
+        return ExerciseDetails(exerciseId: exerciseId!);
+      });
+
   // Public shell route
   final publicRoutes = ShellRoute(
       builder: (context, state, child) => PublicLayout(child: child),
       routes: [
-        baseRoute,
         registerRoute,
         loginRoute,
       ],
       redirect: (context, state) {
-        if (authService.isSignedIn && userProvider.isAuthenticated()) {
+        if (authService.isAuthenticated()) {
           return '/profile';
         }
         return null;
@@ -75,16 +80,18 @@ GoRouter createRouter(BuildContext context) {
   final privateRoutes = ShellRoute(
       builder: (context, state, child) => PrivateLayout(child: child),
       routes: [
+        homeRoute,
         profileRoute,
         createProgramRoute,
         indexProgramRoute,
         programDetailsRoute,
         profileHealth,
         profilePersonal,
-        profilePassword
+        profilePassword,
+        exerciseDetails,
       ],
       redirect: (context, state) {
-        if (!authService.isSignedIn || !userProvider.isAuthenticated()) {
+        if (!authService.isAuthenticated()) {
           return '/';
         }
         return null;
@@ -99,8 +106,7 @@ GoRouter createRouter(BuildContext context) {
       privateRoutes,
     ],
     redirect: (context, state) {
-      final isAuthenticated =
-          authService.isSignedIn && userProvider.isAuthenticated();
+      final isAuthenticated = authService.isAuthenticated();
       final isLoggingIn = state.matchedLocation == '/';
       final isRegistering = state.matchedLocation == '/register';
       final isPublicRoute = state.matchedLocation == '/';

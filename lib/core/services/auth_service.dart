@@ -1,15 +1,21 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:go_router/go_router.dart';
-import 'package:grindstone/core/exports/components.dart';
 import 'package:provider/provider.dart';
+
+import 'package:grindstone/core/exports/components.dart';
 import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/services/user_session.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:grindstone/core/model/user.dart' as MyUser;
+import 'package:grindstone/core/model/user.dart' as my_user;
 
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final UserProvider _userProvider;
+
+  AuthService(this._userProvider);
 
   bool get isSignedIn => _auth.currentUser != null;
   User? get currentUser => _auth.currentUser;
@@ -43,7 +49,7 @@ class AuthService extends ChangeNotifier {
 
       if (user != null) {
         // Create the custom user object
-        final newUser = MyUser.User(
+        final newUser = my_user.User(
           id: user.uid,
           firstName: firstName,
           lastName: lastName,
@@ -152,8 +158,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  bool isAuthenticated(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    return isSignedIn && userProvider.isAuthenticated();
+  bool isAuthenticated() {
+    return isSignedIn && _userProvider.isAuthenticated();
   }
 }

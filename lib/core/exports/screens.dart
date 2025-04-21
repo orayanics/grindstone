@@ -13,3 +13,6 @@ export '/presentation/screens/profile/profile_password.dart';
 export '/presentation/screens/program/create.dart';
 export '/presentation/screens/program/index.dart';
 export '/presentation/screens/program/read.dart';
+
+// Exercise screens
+export '/presentation/screens/exercise/read.dart';

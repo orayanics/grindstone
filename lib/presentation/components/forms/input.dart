@@ -266,6 +266,7 @@ class FormInputText extends StatefulWidget {
   final String label;
   final bool isRequired;
   final String placeholder;
+  final bool isAlphanumeric;
 
   const FormInputText(
       {super.key,
@@ -273,7 +274,8 @@ class FormInputText extends StatefulWidget {
       required this.isPrimary,
       this.label = '',
       this.isRequired = false,
-      this.placeholder = ''});
+      this.placeholder = '',
+      this.isAlphanumeric = false});
 
   @override
   State<FormInputText> createState() => _FormInputTextState();
@@ -293,10 +295,14 @@ class _FormInputTextState extends State<FormInputText> {
       errorMessage = null;
     });
 
-    final textRegex = RegExp(r'^[a-zA-Z]{1,50}$');
+    RegExp textRegex = RegExp(r'^[a-zA-Z]{1,50}$');
+    if (widget.isAlphanumeric) {
+      textRegex = RegExp(r'^[a-zA-Z0-9]{1,50}$');
+    }
+
     if (!textRegex.hasMatch(value)) {
       setState(() {
-        errorMessage = 'Please enter only letters (maximum of 50).';
+        errorMessage = 'Please enter a valid ${widget.label}.';
       });
       return false;
     }
@@ -475,9 +481,8 @@ class _FormInputNumberState extends State<FormInputNumber> {
             ),
             child: TextFormField(
               decoration: InputDecoration(
-                hintText: widget.placeholder.isNotEmpty
-                    ? widget.placeholder
-                    : 'Error fetching',
+                hintText:
+                    widget.placeholder.isNotEmpty ? widget.placeholder : '0',
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 errorStyle: const TextStyle(
