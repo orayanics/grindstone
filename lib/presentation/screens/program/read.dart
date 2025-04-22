@@ -230,7 +230,8 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                 itemBuilder: (context, index) {
                   final exercise = _program!.exercises[index];
                   return ExerciseListItem(
-                    exercise: exercise,
+                    exercise: {...exercise,
+                    'programId': widget.programId,},
                     onDelete: () =>
                         _showDeleteDialog('exercise', exercise['exerciseId']!),
                     onSelect: () {
@@ -238,6 +239,7 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                       context.go(
                         AppRoutes.exerciseDetails
                             .replaceAll(':exerciseId', exerciseId!),
+                        extra: widget.programId,
                       );
                     },
                   );

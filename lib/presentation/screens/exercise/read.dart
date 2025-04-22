@@ -2,13 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:grindstone/core/config/colors.dart';
 import 'package:grindstone/core/services/exercise_api.dart';
 import 'package:grindstone/core/model/exercise.dart';
+import 'package:grindstone/core/services/user_session.dart';
+import 'package:go_router/go_router.dart';
+
+
+import '../../components/modal/log_exercise.dart';
 
 class ExerciseDetails extends StatelessWidget {
   final String exerciseId;
-  const ExerciseDetails({super.key, required this.exerciseId});
+
+  const ExerciseDetails({super.key, required this.exerciseId,});
 
   @override
   Widget build(BuildContext context) {
+    final state = GoRouter.of(context).routerDelegate.currentConfiguration;
+    final programId = state?.extra as String?;
+
+    if (programId == null) {
+      return const Scaffold(
+        body: Center(child: Text('Program ID not found')),
+      );
+    }
     return FutureBuilder<Map<String, String>>(
       future: ExerciseApi.fetchExerciseById(exerciseId),
       builder: (context, snapshot) {
@@ -28,6 +42,7 @@ class ExerciseDetails extends StatelessWidget {
 
         final exerciseData = snapshot.data!;
         final exercise = Exercise(
+          programId: programId?? '',
           id: exerciseData['exerciseId'] ?? '',
           name: exerciseData['name'] ?? '',
           gifUrl: exerciseData['gifUrl'] ?? '',
@@ -38,7 +53,7 @@ class ExerciseDetails extends StatelessWidget {
           equipments: (exerciseData['equipments'] ?? '').split(','),
         );
 
-        return Scaffold(body: ExerciseDetailsView(exercise: exercise));
+        return Scaffold(body: ExerciseDetailsView(exercise: exercise , programId: programId,));
       },
     );
   }
@@ -46,7 +61,8 @@ class ExerciseDetails extends StatelessWidget {
 
 class ExerciseDetailsView extends StatelessWidget {
   final Exercise exercise;
-  const ExerciseDetailsView({super.key, required this.exercise});
+  final String programId;
+  const ExerciseDetailsView({super.key, required this.exercise, required this.programId});
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +84,8 @@ class ExerciseDetailsView extends StatelessWidget {
           // response from api contains
           // exerciseId, name, gifUrl, instructions, targetMuscles, secondaryMuscles, bodyParts
           ExerciseDetailsBody(
+            programId: exercise.programId,
+            exerciseId: exercise.id,
             gifUrl: exercise.gifUrl,
             muscleGroups: exercise.targetMuscles + exercise.secondaryMuscles,
             exerciseDetails: exercise.bodyParts,
@@ -81,6 +99,8 @@ class ExerciseDetailsView extends StatelessWidget {
 
 class ExerciseDetailsBody extends StatelessWidget {
   final String gifUrl;
+  final String programId;
+  final String exerciseId;
   final List<String> muscleGroups;
   final List<String> exerciseDetails;
   final List<String> instructions;
@@ -90,7 +110,9 @@ class ExerciseDetailsBody extends StatelessWidget {
       required this.gifUrl,
       required this.muscleGroups,
       required this.exerciseDetails,
-      required this.instructions});
+      required this.instructions,
+      required this.programId,
+      required this.exerciseId});
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +123,23 @@ class ExerciseDetailsBody extends StatelessWidget {
           Text(muscleGroups.join(', ')),
           Text(exerciseDetails.join(', ')),
           Text(instructions.join(', ')),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+
+              print('Program ID: $programId');
+              print('Exercise ID: $exerciseId');
+
+              showDialog(
+                context: context,
+                builder: (context) => LogExerciseModal(
+                  programId: programId, // Pass the programId dynamically
+                  exerciseId: exerciseId, // Pass the exerciseId dynamically
+                ),
+              );
+            },
+            child: Text("Log Session"),
+          ),
         ],
       ),
     );
@@ -146,6 +185,9 @@ class ExerciseDetailsHeader extends StatelessWidget {
               color: textLight,
             ),
       ),
+      const SizedBox(height: 16),
+
+
     ]);
   }
 }

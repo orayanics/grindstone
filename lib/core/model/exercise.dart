@@ -1,4 +1,5 @@
 class Exercise {
+  final String programId;
   final String id;
   final String name;
   final String gifUrl;
@@ -9,7 +10,9 @@ class Exercise {
   final List<String> equipments;
 
   Exercise(
-      {required this.id,
+      {
+      required this.programId,
+        required this.id,
       required this.name,
       required this.gifUrl,
       required this.instructions,
