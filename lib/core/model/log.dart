@@ -1,35 +1,23 @@
-class Log {
-  String date;
-  int reps;
-  int rir;
-  String userId;
-  int weight;
+import 'package:grindstone/core/model/data_log.dart';
 
-  Log({
-    required this.date,
-    required this.reps,
-    required this.rir,
-    required this.weight,
-    required this.userId,
-  });
+class Log {
+  String? id;
+  String programId;
+  String? userId;
+  List<DataLog> logs;
+
+  Log({this.id, required this.programId, this.userId, required this.logs});
 
   Map<String, dynamic> toMap() {
-    return {
-      'date': date,
-      'reps': reps,
-      'rir': rir,
-      'weight': weight,
-      'userId': userId,
-    };
+    return {'id': id, 'programId': programId, 'userId': userId, 'logs': logs};
   }
 
   factory Log.fromMap(Map<String, dynamic> map) {
     return Log(
-      date: map['date'],
-      reps: map['reps'],
-      rir: map['rir'],
-      weight: map['weight'],
+      id: map['id'],
+      programId: map['programId'],
       userId: map['userId'],
+      logs: List<DataLog>.from(map['logs'].map((log) => DataLog.fromMap(log))),
     );
   }
 }

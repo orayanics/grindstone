@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:grindstone/core/model/log.dart';
+import 'package:grindstone/core/model/data_log.dart';
 import 'package:grindstone/core/services/log_service.dart';
 import 'package:grindstone/core/exports/components.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class LogExerciseModal extends StatefulWidget {
   final String programId;
   final String exerciseId;
-
 
   const LogExerciseModal({
     super.key,
@@ -15,11 +18,9 @@ class LogExerciseModal extends StatefulWidget {
 
   @override
   State<LogExerciseModal> createState() => _LogExerciseModalState();
-
 }
 
 class _LogExerciseModalState extends State<LogExerciseModal> {
-
   final _weightController = TextEditingController();
   final _repsController = TextEditingController();
   final rirController = TextEditingController();
@@ -33,16 +34,15 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
     super.dispose();
   }
 
-
   Future<void> _logExercise() async {
-
+    if (!mounted) return;
 
     final weight = int.tryParse(_weightController.text.trim());
     final reps = int.tryParse(_repsController.text.trim());
     final rir = int.tryParse(rirController.text.trim());
 
     if (weight == null || reps == null || rir == null) {
-      FailToast.show('Please enter valid weight, reps, and RIR');
+      if (mounted) FailToast.show('Please enter valid weight, reps, and RIR');
       return;
     }
 
@@ -51,23 +51,30 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
     });
 
     try {
+      if (!mounted) return;
 
-      await LogService().logExercise(
+      final logService = Provider.of<LogService>(context, listen: false);
+      await logService.createLog(Log(
         programId: widget.programId,
-        exerciseId: widget.exerciseId,
-        weight: weight,
-        reps: reps,
-        rir: rir,
-      );
+        logs: [
+          DataLog(
+            id: const Uuid().v4(),
+            exerciseId: widget.exerciseId,
+            weight: weight,
+            reps: reps,
+            rir: rir,
+            date: DateTime.now().toIso8601String(),
+          ),
+        ],
+      ));
 
       if (mounted) {
-        Navigator.of(context).pop();
         SuccessToast.show('Exercise logged successfully');
+        Navigator.of(context).pop();
       }
     } catch (e) {
-      FailToast.show('Failed to log exercise: $e');
-    }
-    finally {
+      if (mounted) FailToast.show('Failed to log exercise: $e');
+    } finally {
       if (mounted) {
         setState(() {
           _isSubmitting = false;
@@ -78,42 +85,34 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Log Exercise'),
-      content: Column(
+    // Check if context is still valid
+    if (!mounted) return Container();
+
+    return Dialog(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _weightController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: "Weight Lifted (kg)"),
+            decoration: const InputDecoration(labelText: "Weight Lifted (kg)"),
           ),
           TextField(
             controller: _repsController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: "Reps Performed"),
+            decoration: const InputDecoration(labelText: "Reps Performed"),
           ),
           TextField(
             controller: rirController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: "RIR"),
+            decoration: const InputDecoration(labelText: "RIR"),
+          ),
+          AccentButton(
+            onPressed: _logExercise,
+            label: 'Log',
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: _isSubmitting ? null : _logExercise,
-          child: _isSubmitting
-              ? CircularProgressIndicator()
-              : Text('Log'),
-        ),
-      ],
     );
   }
 }

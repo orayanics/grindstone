@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/config/colors.dart';
 import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/services/auth_service.dart';
-import 'package:grindstone/core/services/user_session.dart';
+import 'package:grindstone/core/services/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class ProfileView extends StatelessWidget {

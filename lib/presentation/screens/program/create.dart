@@ -101,7 +101,6 @@ class _CreateProgramViewState extends State<CreateProgramView> {
         setState(() {
           _isSubmitting = true;
         });
-
         final program = ExerciseProgram(
           id: Uuid().v4(),
           userId: currentUser.uid,

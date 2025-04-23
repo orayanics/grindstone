@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grindstone/core/exports/components.dart';
-import 'package:grindstone/core/services/user_session.dart';
+import 'package:grindstone/core/services/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePersonalView extends StatelessWidget {
