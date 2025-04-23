@@ -2,21 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:grindstone/core/config/colors.dart';
 import 'package:grindstone/core/services/exercise_api.dart';
 import 'package:grindstone/core/model/exercise.dart';
+import 'package:grindstone/core/model/log.dart';
 import 'package:grindstone/core/services/user_session.dart';
+import 'package:grindstone/core/services/log_service.dart';
 import 'package:go_router/go_router.dart';
-
 
 import '../../components/modal/log_exercise.dart';
 
 class ExerciseDetails extends StatelessWidget {
   final String exerciseId;
 
-  const ExerciseDetails({super.key, required this.exerciseId,});
+  const ExerciseDetails({
+    super.key,
+    required this.exerciseId,
+  });
 
   @override
   Widget build(BuildContext context) {
     final state = GoRouter.of(context).routerDelegate.currentConfiguration;
-    final programId = state?.extra as String?;
+    final programId = state.extra as String?;
 
     if (programId == null) {
       return const Scaffold(
@@ -40,9 +44,16 @@ class ExerciseDetails extends StatelessWidget {
           );
         }
 
+        // get log from log service returnlog
+        final logService = LogService();
+
+        final logFuture = logService.returnLog(
+          programId: programId,
+          exerciseId: exerciseId,
+        );
+
         final exerciseData = snapshot.data!;
         final exercise = Exercise(
-          programId: programId?? '',
           id: exerciseData['exerciseId'] ?? '',
           name: exerciseData['name'] ?? '',
           gifUrl: exerciseData['gifUrl'] ?? '',
@@ -53,7 +64,33 @@ class ExerciseDetails extends StatelessWidget {
           equipments: (exerciseData['equipments'] ?? '').split(','),
         );
 
-        return Scaffold(body: ExerciseDetailsView(exercise: exercise , programId: programId,));
+        return FutureBuilder<Log?>(
+          future: logFuture,
+          builder: (context, logSnapshot) {
+            if (logSnapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            } else if (logSnapshot.hasError) {
+              return Scaffold(
+                body: Center(child: Text('Error: ${logSnapshot.error}')),
+              );
+            } else if (!logSnapshot.hasData) {
+              return const Scaffold(
+                body: Center(child: Text('Log not found')),
+              );
+            }
+
+            final log = logSnapshot.data!;
+            return Scaffold(
+              body: ExerciseDetailsView(
+                exercise: exercise,
+                programId: programId,
+                log: log,
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -62,7 +99,12 @@ class ExerciseDetails extends StatelessWidget {
 class ExerciseDetailsView extends StatelessWidget {
   final Exercise exercise;
   final String programId;
-  const ExerciseDetailsView({super.key, required this.exercise, required this.programId});
+  final Log log;
+  const ExerciseDetailsView(
+      {super.key,
+      required this.exercise,
+      required this.programId,
+      required this.log});
 
   @override
   Widget build(BuildContext context) {
@@ -84,12 +126,34 @@ class ExerciseDetailsView extends StatelessWidget {
           // response from api contains
           // exerciseId, name, gifUrl, instructions, targetMuscles, secondaryMuscles, bodyParts
           ExerciseDetailsBody(
-            programId: exercise.programId,
+            programId: programId,
             exerciseId: exercise.id,
             gifUrl: exercise.gifUrl,
             muscleGroups: exercise.targetMuscles + exercise.secondaryMuscles,
             exerciseDetails: exercise.bodyParts,
             instructions: exercise.instructions,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Log Details',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Date: ${log.date}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          Text(
+            'Reps: ${log.reps}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          Text(
+            'RIR: ${log.rir}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          Text(
+            'Weight: ${log.weight}',
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
       ),
@@ -126,7 +190,6 @@ class ExerciseDetailsBody extends StatelessWidget {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-
               print('Program ID: $programId');
               print('Exercise ID: $exerciseId');
 
@@ -186,8 +249,6 @@ class ExerciseDetailsHeader extends StatelessWidget {
             ),
       ),
       const SizedBox(height: 16),
-
-
     ]);
   }
 }
