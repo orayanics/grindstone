@@ -36,53 +36,50 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
     if (!mounted) return;
 
     final weight = int.tryParse(_weightController.text.trim());
-    final reps = int.tryParse(_repsController.text.trim());
-    final rir = int.tryParse(rirController.text.trim());
+    final reps   = int.tryParse(_repsController.text.trim());
+    final rir    = int.tryParse(rirController.text.trim());
 
     if (weight == null || reps == null || rir == null) {
-      if (mounted) FailToast.show('Please enter valid weight, reps, and RIR');
+      FailToast.show('Please enter valid weight, reps, and RIR');
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    setState(() => _isSubmitting = true);
 
     try {
-      if (!mounted) return;
-
       final logService = Provider.of<LogService>(context, listen: false);
 
-      await logService.createLog(Log(
+
+      final newEntry = DataLog(
+        weight: weight,
+        reps: reps,
+        rir: rir,
+        date: DateTime.now().toIso8601String(),
+      );
+
+
+      final log = Log(
         id: widget.exerciseId,
-        logs: [
-          DataLog(
-            weight: weight,
-            reps: reps,
-            rir: rir,
-            date: DateTime.now().toIso8601String(),
-          ),
-        ],
-      ));
+        userId: null,
+        exerciseId: widget.exerciseId,
+        programId: null,
+        logs: [newEntry],
+      );
 
-      print('exerciseId: ${widget.exerciseId}');
-      print('weight: $weight');
-      print('reps: $reps');
-      print('rir: $rir');
-      print('date: ${DateTime.now().toIso8601String()}');
 
-      if (mounted) {
+      final bool didSave = await logService.createLog(log);
+
+   
+      if (didSave) {
         SuccessToast.show('Exercise logged successfully');
         Navigator.of(context).pop();
+      } else {
+        FailToast.show('Failed to log exercise');
       }
     } catch (e) {
-      if (mounted) FailToast.show('Failed to log exercise: $e');
+      FailToast.show('Unexpected error: $e');
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 

@@ -78,6 +78,7 @@ class LogService with ChangeNotifier {
   }
 
   Future<T?> _executeWithErrorHandling<T>(
+
     Future<T?> Function() operation,
     String errorPrefix,
   ) async {
@@ -96,11 +97,25 @@ class LogService with ChangeNotifier {
     _startLoading();
 
     try {
-      final result = await operation();
+      // 1) Run the operation and capture the bool it returns:
+      final success = await operation();
+
+      // 2) Now check that bool:
+      if (success is bool && success == false) {
+        // The write returned false—treat as failure:
+        print('🔥 createLog returned false');
+        FailToast.show('Failed to save log (returned false)');
+      } else {
+        // Either it's true, or it's some other type—treat as success:
+        print('✅ createLog succeeded: $success');
+      }
+
       _endLoading();
-      return result;
+      return success;
     } catch (e) {
+      _endLoading();
       _setError('$errorPrefix: $e');
+      FailToast.show('$errorPrefix');
       return null;
     }
   }
@@ -168,22 +183,32 @@ class LogService with ChangeNotifier {
     return await _executeWithErrorHandling<bool>(
           () async {
             final userId = _getCurrentUserId();
+            final docRef = _firestore.collection('logs').doc(exerciseLog.id);
             if (userId == null) {
               throw Exception('User ID is null. Cannot create log.');
             }
-            exerciseLog = Log(
-              id: exerciseLog.id,
-              userId: userId,
-              logs: exerciseLog.logs,
-            );
+            await docRef.set({
+              'id':exerciseLog.id,
+              'userId': userId,
+              'exerciseId': exerciseLog.id,
+              if (exerciseLog.programId != null)
+                'programId': exerciseLog.programId,
+            },SetOptions(merge: true));
 
-            await _firestore
-                .collection('logs')
-                .doc(exerciseLog.id)
-                .set(exerciseLog.toMap());
+
+            final entry = exerciseLog.logs.last.toMap();
+            await docRef.update({
+              'logs': FieldValue.arrayUnion([entry]),
+            });
 
             // update cache and realtime data
-            _logCache[exerciseLog.id] = exerciseLog;
+            _logCache[exerciseLog.id] = Log(
+              id: exerciseLog.id,
+              userId: userId,
+              exerciseId: exerciseLog.exerciseId,
+              programId: exerciseLog.programId,
+             logs: [...?_logCache[exerciseLog.id]?.logs, entry].map((e) => DataLog.fromMap(e as Map<String, dynamic>)).toList(),
+            );
 
             if (_logSubscription != null) {
               _logSubscription!.cancel();
