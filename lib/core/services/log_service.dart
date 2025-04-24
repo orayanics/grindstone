@@ -8,7 +8,6 @@ import 'package:grindstone/core/model/data_log.dart';
 import 'package:grindstone/core/model/log.dart';
 import 'package:grindstone/core/services/user_provider.dart';
 import 'package:grindstone/presentation/components/snackbar/toast.dart';
-import 'package:uuid/uuid.dart';
 
 class LogService with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -157,7 +156,6 @@ class LogService with ChangeNotifier {
         _cancelSubscriptions();
       });
     } catch (e) {
-      print('oraya error: $e');
       _setError('Failed to start log listener: $e');
       _endLoading();
       _cancelSubscriptions();

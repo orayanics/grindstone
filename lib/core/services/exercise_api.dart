@@ -41,7 +41,6 @@ class ExerciseApi {
 
   static Future<Map<String, String>> fetchExerciseById(
       String exerciseId) async {
-    print('${_baseUrl ?? ''}/exercises/$exerciseId');
     return _handleApiCall(
         http.get(Uri.parse('${_baseUrl ?? ''}/exercises/$exerciseId')),
         (data) => {

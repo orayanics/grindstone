@@ -135,7 +135,7 @@ class ProgramService with ChangeNotifier {
           _endLoading();
 
           for (var program in programs) {
-            _programCache[program.id ?? ''] = program;
+            _programCache[program.id] = program;
           }
         },
         onError: (error) {
@@ -229,7 +229,7 @@ class ProgramService with ChangeNotifier {
 
         // Update cache
         for (var program in programs) {
-          _programCache[program.id ?? ''] = program;
+          _programCache[program.id] = program;
         }
       },
       'Failed to fetch programs',
