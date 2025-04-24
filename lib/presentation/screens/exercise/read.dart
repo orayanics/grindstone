@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:grindstone/core/config/colors.dart';
 import 'package:grindstone/core/model/data_log.dart';
 import 'package:grindstone/core/services/exercise_api.dart';
-import 'package:grindstone/core/model/exercise.dart';
-import 'package:grindstone/core/model/log.dart';
 import 'package:grindstone/core/services/log_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:grindstone/core/utils/date.dart';
 import 'package:provider/provider.dart';
 
 import 'widget/log_exercise.dart';
@@ -43,6 +42,7 @@ class ExerciseDetailsView extends StatelessWidget {
                   context: context,
                   builder: (context) {
                     return LogExerciseModal(
+                      apiId: apiId,
                       exerciseId: exerciseId,
                     );
                   },
@@ -79,8 +79,13 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
     try {
       final logService = Provider.of<LogService>(context, listen: false);
       final logs = await logService.fetchLogById(widget.exerciseId);
+
       setState(() {
-        _logs = logs;
+        if (logs.isEmpty) {
+          _logs = [];
+        } else {
+          _logs = logs;
+        }
         _isLoading = false;
       });
     } catch (e) {
@@ -93,32 +98,33 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: [
-          Text('Exercise Logs'),
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (_error != null)
-            Center(child: Text(_error!))
-          else
-            ListView.builder(
-              itemCount: _logs.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  child: Column(
+    return Column(
+      children: [
+        Text('Exercise Logs'),
+        if (_isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (_error != null)
+          Center(child: Text(_error!))
+        else
+          Column(
+            children: [
+              if (_logs.isEmpty)
+                const Text('No logs available')
+              else
+                ..._logs.map((log) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Date: ${_logs[index].date}'),
-                      Text('Weight: ${_logs[index].weight}'),
-                      Text('Reps: ${_logs[index].reps}'),
-                      const SizedBox(height: 16),
+                      Text('Weight: ${log.weight}'),
+                      Text('Reps: ${log.reps}'),
+                      Text('RIR: ${log.rir}'),
+                      Text('Date: ${Date.parseDate(log.date)}'),
                     ],
-                  ),
-                );
-              },
-            ),
-        ],
-      ),
+                  );
+                })
+            ],
+          ),
+      ],
     );
   }
 }
@@ -169,21 +175,19 @@ class _ExerciseDetailsState extends State<ExerciseDetails> {
       return Center(child: Text(_error!));
     }
 
-    return Container(
-      child: Column(
-        children: [
-          ExerciseDetailsHeader(
-            exerciseName: _exercise?['name'] ?? '',
-            lastUpdated: 'Last Updated',
-          ),
-          ExerciseDetailsBody(
-            bodyParts: _exercise?['bodyParts']?.split(',') ?? [],
-            targetMuscles: _exercise?['targetMuscles']?.split(',') ?? [],
-            secondaryMuscles: _exercise?['secondaryMuscles']?.split(',') ?? [],
-            instructions: _exercise?['instructions']?.split(',') ?? [],
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        ExerciseDetailsHeader(
+          exerciseName: _exercise?['name'] ?? '',
+          lastUpdated: 'Last Updated',
+        ),
+        ExerciseDetailsBody(
+          bodyParts: _exercise?['bodyParts']?.split(',') ?? [],
+          targetMuscles: _exercise?['targetMuscles']?.split(',') ?? [],
+          secondaryMuscles: _exercise?['secondaryMuscles']?.split(',') ?? [],
+          instructions: _exercise?['instructions']?.split(',') ?? [],
+        ),
+      ],
     );
   }
 }
@@ -203,27 +207,25 @@ class ExerciseDetailsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-              'Body Parts: ${bodyParts.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-          Text(
-              'Target Muscles: ${targetMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-          Text(
-              'Secondary Muscles: ${secondaryMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-          Text('Instructions:'),
-          ...instructions.map((instruction) {
-            return Text(instruction.replaceAll('[', '').replaceAll(']', ''),
-                textAlign: TextAlign.start,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: textLight,
-                    ));
-          }),
-          const SizedBox(height: 16),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+            'Body Parts: ${bodyParts.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
+        Text(
+            'Target Muscles: ${targetMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
+        Text(
+            'Secondary Muscles: ${secondaryMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
+        Text('Instructions:'),
+        ...instructions.map((instruction) {
+          return Text(instruction.replaceAll('[', '').replaceAll(']', ''),
+              textAlign: TextAlign.start,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: textLight,
+                  ));
+        }),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

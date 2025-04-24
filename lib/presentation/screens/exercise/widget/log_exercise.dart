@@ -4,13 +4,14 @@ import 'package:grindstone/core/model/data_log.dart';
 import 'package:grindstone/core/services/log_service.dart';
 import 'package:grindstone/core/exports/components.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
 class LogExerciseModal extends StatefulWidget {
+  final String apiId;
   final String exerciseId;
 
   const LogExerciseModal({
     super.key,
+    required this.apiId,
     required this.exerciseId,
   });
 
@@ -36,8 +37,8 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
     if (!mounted) return;
 
     final weight = int.tryParse(_weightController.text.trim());
-    final reps   = int.tryParse(_repsController.text.trim());
-    final rir    = int.tryParse(rirController.text.trim());
+    final reps = int.tryParse(_repsController.text.trim());
+    final rir = int.tryParse(rirController.text.trim());
 
     if (weight == null || reps == null || rir == null) {
       FailToast.show('Please enter valid weight, reps, and RIR');
@@ -49,7 +50,6 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
     try {
       final logService = Provider.of<LogService>(context, listen: false);
 
-
       final newEntry = DataLog(
         weight: weight,
         reps: reps,
@@ -57,19 +57,16 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
         date: DateTime.now().toIso8601String(),
       );
 
-
+      // id is program id
+      // exercise id is from api
       final log = Log(
         id: widget.exerciseId,
-        userId: null,
-        exerciseId: widget.exerciseId,
-        programId: null,
+        exerciseId: widget.apiId,
         logs: [newEntry],
       );
 
-
       final bool didSave = await logService.createLog(log);
 
-   
       if (didSave) {
         SuccessToast.show('Exercise logged successfully');
         Navigator.of(context).pop();

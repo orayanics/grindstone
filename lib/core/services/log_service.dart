@@ -78,7 +78,6 @@ class LogService with ChangeNotifier {
   }
 
   Future<T?> _executeWithErrorHandling<T>(
-
     Future<T?> Function() operation,
     String errorPrefix,
   ) async {
@@ -97,25 +96,12 @@ class LogService with ChangeNotifier {
     _startLoading();
 
     try {
-      // 1) Run the operation and capture the bool it returns:
       final success = await operation();
-
-      // 2) Now check that bool:
-      if (success is bool && success == false) {
-        // The write returned false—treat as failure:
-        print('🔥 createLog returned false');
-        FailToast.show('Failed to save log (returned false)');
-      } else {
-        // Either it's true, or it's some other type—treat as success:
-        print('✅ createLog succeeded: $success');
-      }
-
       _endLoading();
       return success;
     } catch (e) {
       _endLoading();
       _setError('$errorPrefix: $e');
-      FailToast.show('$errorPrefix');
       return null;
     }
   }
@@ -184,19 +170,43 @@ class LogService with ChangeNotifier {
           () async {
             final userId = _getCurrentUserId();
             final docRef = _firestore.collection('logs').doc(exerciseLog.id);
+
             if (userId == null) {
               throw Exception('User ID is null. Cannot create log.');
             }
-            await docRef.set({
-              'id':exerciseLog.id,
-              'userId': userId,
-              'exerciseId': exerciseLog.id,
-              if (exerciseLog.programId != null)
-                'programId': exerciseLog.programId,
-            },SetOptions(merge: true));
 
+            final querySnapshot = await _firestore
+                .collection('logs')
+                .where('userId', isEqualTo: userId)
+                .where('id', isEqualTo: exerciseLog.id)
+                .get();
+
+            if (querySnapshot.docs.isNotEmpty) {
+              final existingDoc = querySnapshot.docs.first;
+              final existingData = existingDoc.data();
+              final existingLogs = existingData['logs'] as List<dynamic>;
+
+              if (existingLogs.isEmpty) {
+                await docRef.update({
+                  'logs': [exerciseLog.logs.last.toMap()]
+                });
+              } else {
+                await docRef.update({
+                  'logs': FieldValue.arrayUnion([exerciseLog.logs.last.toMap()])
+                });
+              }
+              return true;
+            }
+
+            // if the log does not exist
+            await docRef.set({
+              'id': exerciseLog.id,
+              'userId': userId,
+              'exerciseId': exerciseLog.exerciseId,
+            }, SetOptions(merge: true));
 
             final entry = exerciseLog.logs.last.toMap();
+
             await docRef.update({
               'logs': FieldValue.arrayUnion([entry]),
             });
@@ -206,8 +216,9 @@ class LogService with ChangeNotifier {
               id: exerciseLog.id,
               userId: userId,
               exerciseId: exerciseLog.exerciseId,
-              programId: exerciseLog.programId,
-             logs: [...?_logCache[exerciseLog.id]?.logs, entry].map((e) => DataLog.fromMap(e as Map<String, dynamic>)).toList(),
+              logs: [...?_logCache[exerciseLog.id]?.logs, entry]
+                  .map((e) => DataLog.fromMap(e as Map<String, dynamic>))
+                  .toList(),
             );
 
             if (_logSubscription != null) {
@@ -255,25 +266,33 @@ class LogService with ChangeNotifier {
     return result ?? [];
   }
 
-  Future<List<DataLog>> fetchLogById(String exerciseId) async {
+  Future<List<DataLog>> fetchLogById(String id) async {
     return await _executeWithErrorHandling<List<DataLog>>(
           () async {
             final doc = await _firestore
                 .collection('logs')
-                .where('exerciseId', isEqualTo: exerciseId)
+                .where('id', isEqualTo: id)
                 .get();
 
             if (doc.docs.isEmpty) return [];
             final data = doc.docs.first.data();
-            if (data['logs'] == null) {
-              data['logs'] = [];
+            if (data['logs'] == null || (data['logs'] as List).isEmpty) {
+              return [];
             }
 
-            final log = Log.fromMap(data);
-            _logCache[log.id ?? ''] = log;
+            final lastLog = (data['logs'] as List).last;
+            return [DataLog.fromMap(lastLog as Map<String, dynamic>)];
+            // if (doc.docs.isEmpty) return [];
+            // final data = doc.docs.first.data();
+            // if (data['logs'] == null) {
+            //   data['logs'] = [];
+            // }
 
-            print('Fetched log: ${log.toMap()}');
-            return log.logs;
+            // final log = Log.fromMap(data);
+            // _logCache[log.id ?? ''] = log;
+
+            // print('Fetched log: ${log.toMap()}');
+            // return log.logs;
           },
           'Failed to fetch log',
         ) ??
