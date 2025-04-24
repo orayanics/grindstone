@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grindstone/core/config/colors.dart';
+import 'package:grindstone/core/model/data_log.dart';
 import 'package:grindstone/core/services/exercise_api.dart';
 import 'package:grindstone/core/model/exercise.dart';
 import 'package:grindstone/core/model/log.dart';
@@ -10,23 +11,20 @@ import 'package:provider/provider.dart';
 import 'widget/log_exercise.dart';
 
 class ExerciseDetailsView extends StatelessWidget {
+  final String apiId;
   final String exerciseId;
-  final String programId;
 
   const ExerciseDetailsView({
     super.key,
+    required this.apiId,
     required this.exerciseId,
-    required this.programId,
   });
 
   @override
   Widget build(BuildContext context) {
     final state = GoRouter.of(context).routerDelegate.currentConfiguration;
-    final extraData = state.extra as List<String>?;
-    final exerciseId =
-        extraData != null && extraData.isNotEmpty ? extraData[0] : null;
-    final programId =
-        extraData != null && extraData.isNotEmpty ? extraData[1] : null;
+    final apiId = state.pathParameters['apiId'] ?? '';
+    final exerciseId = state.pathParameters['exerciseId'] ?? '';
 
     return Container(
         alignment: Alignment.center,
@@ -35,8 +33,23 @@ class ExerciseDetailsView extends StatelessWidget {
         ),
         child: Column(
           children: [
-            ExerciseDetails(exerciseId: exerciseId ?? ''),
-            ExerciseLogs(exerciseId: exerciseId ?? ''),
+            ExerciseDetails(exerciseId: apiId),
+            ExerciseLogs(
+              exerciseId: exerciseId,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return LogExerciseModal(
+                      exerciseId: exerciseId,
+                    );
+                  },
+                );
+              },
+              child: const Text('Log Exercise'),
+            )
           ],
         ));
   }
@@ -44,16 +57,15 @@ class ExerciseDetailsView extends StatelessWidget {
 
 // stateful widget for exercise logs
 class ExerciseLogs extends StatefulWidget {
-  final String programId;
-
-  const ExerciseLogs({super.key, required this.programId});
+  final String exerciseId;
+  const ExerciseLogs({super.key, required this.exerciseId});
 
   @override
   State<ExerciseLogs> createState() => _ExerciseLogsState();
 }
 
 class _ExerciseLogsState extends State<ExerciseLogs> {
-  List<Log> _logs = [];
+  List<DataLog> _logs = [];
   bool _isLoading = true;
   String? _error;
 
@@ -66,11 +78,9 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
   Future<void> _fetchExerciseLogs() async {
     try {
       final logService = Provider.of<LogService>(context, listen: false);
-      final logs = await logService.fetchLogsByProgram(
-          programId: widget.programId, limit: 10);
+      final logs = await logService.fetchLogById(widget.exerciseId);
       setState(() {
-        _logs =
-            logs?.logs != null ? List<Log>.from(logs!.logs as List) : <Log>[];
+        _logs = logs;
         _isLoading = false;
       });
     } catch (e) {
@@ -98,18 +108,10 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
                 return Container(
                   child: Column(
                     children: [
-                      Text(_logs[index].logs.isNotEmpty
-                          ? _logs[index].logs[0].date
-                          : ''),
-                      Text(_logs[index].logs.isNotEmpty
-                          ? _logs[index].logs[0].weight.toString()
-                          : ''),
-                      Text(_logs[index].logs.isNotEmpty
-                          ? _logs[index].logs[0].reps.toString()
-                          : ''),
-                      Text(_logs[index].logs.isNotEmpty
-                          ? _logs[index].logs[0].rir.toString()
-                          : ''),
+                      Text('Date: ${_logs[index].date}'),
+                      Text('Weight: ${_logs[index].weight}'),
+                      Text('Reps: ${_logs[index].reps}'),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 );
@@ -144,7 +146,6 @@ class _ExerciseDetailsState extends State<ExerciseDetails> {
 
   Future<void> _fetchExerciseDetails() async {
     try {
-      print('exerciseId: ${widget.exerciseId}');
       final exercise = await ExerciseApi.fetchExerciseById(widget.exerciseId);
       setState(() {
         _exercise = exercise;
@@ -176,16 +177,10 @@ class _ExerciseDetailsState extends State<ExerciseDetails> {
             lastUpdated: 'Last Updated',
           ),
           ExerciseDetailsBody(
-            gifUrl: _exercise?['gifUrl'] ?? '',
-            muscleGroups: _exercise?['muscleGroups'] != null
-                ? List<String>.from(_exercise!['muscleGroups'] as List)
-                : <String>[],
-            exerciseDetails: _exercise?['exerciseDetails'] != null
-                ? List<String>.from(_exercise!['exerciseDetails'] as List)
-                : <String>[],
-            instructions: _exercise?['instructions'] != null
-                ? List<String>.from(_exercise!['instructions'] as List)
-                : <String>[],
+            bodyParts: _exercise?['bodyParts']?.split(',') ?? [],
+            targetMuscles: _exercise?['targetMuscles']?.split(',') ?? [],
+            secondaryMuscles: _exercise?['secondaryMuscles']?.split(',') ?? [],
+            instructions: _exercise?['instructions']?.split(',') ?? [],
           ),
         ],
       ),
@@ -194,46 +189,38 @@ class _ExerciseDetailsState extends State<ExerciseDetails> {
 }
 
 class ExerciseDetailsBody extends StatelessWidget {
-  final String gifUrl;
-  final List<String> muscleGroups;
-  final List<String> exerciseDetails;
+  final List<String> bodyParts;
+  final List<String> targetMuscles;
+  final List<String> secondaryMuscles;
   final List<String> instructions;
 
   const ExerciseDetailsBody(
       {super.key,
-      required this.gifUrl,
-      required this.muscleGroups,
-      required this.exerciseDetails,
+      required this.bodyParts,
+      required this.targetMuscles,
+      required this.secondaryMuscles,
       required this.instructions});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          gifUrl.isNotEmpty
-              ? Image.network(
-                  gifUrl,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const SizedBox(
-                      height: 200,
-                      child: Center(child: Text('Image not available')),
-                    );
-                  },
-                )
-              : const SizedBox(
-                  height: 200,
-                  child: Center(child: Text('No image available')),
-                ),
-          Text(muscleGroups.isNotEmpty
-              ? muscleGroups.join(', ')
-              : 'No muscle groups specified'),
-          Text(exerciseDetails.isNotEmpty
-              ? exerciseDetails.join(', ')
-              : 'No details available'),
-          Text(instructions.isNotEmpty
-              ? instructions.join(', ')
-              : 'No instructions available'),
+          Text(
+              'Body Parts: ${bodyParts.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
+          Text(
+              'Target Muscles: ${targetMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
+          Text(
+              'Secondary Muscles: ${secondaryMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
+          Text('Instructions:'),
+          ...instructions.map((instruction) {
+            return Text(instruction.replaceAll('[', '').replaceAll(']', ''),
+                textAlign: TextAlign.start,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: textLight,
+                    ));
+          }),
           const SizedBox(height: 16),
         ],
       ),

@@ -1,5 +1,5 @@
 class ExerciseProgram {
-  String? id;
+  String id;
   String userId;
   String programName;
   String dayOfExecution;
@@ -14,6 +14,7 @@ class ExerciseProgram {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'userId': userId,
       'programName': programName,
       'dayOfExecution': dayOfExecution,

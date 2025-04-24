@@ -7,12 +7,10 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 class LogExerciseModal extends StatefulWidget {
-  final String programId;
   final String exerciseId;
 
   const LogExerciseModal({
     super.key,
-    required this.programId,
     required this.exerciseId,
   });
 
@@ -54,12 +52,11 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
       if (!mounted) return;
 
       final logService = Provider.of<LogService>(context, listen: false);
+
       await logService.createLog(Log(
-        programId: widget.programId,
+        id: widget.exerciseId,
         logs: [
           DataLog(
-            id: const Uuid().v4(),
-            exerciseId: widget.exerciseId,
             weight: weight,
             reps: reps,
             rir: rir,
@@ -67,6 +64,12 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
           ),
         ],
       ));
+
+      print('exerciseId: ${widget.exerciseId}');
+      print('weight: $weight');
+      print('reps: $reps');
+      print('rir: $rir');
+      print('date: ${DateTime.now().toIso8601String()}');
 
       if (mounted) {
         SuccessToast.show('Exercise logged successfully');

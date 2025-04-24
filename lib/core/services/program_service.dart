@@ -161,14 +161,20 @@ class ProgramService with ChangeNotifier {
 
     return await _executeWithErrorHandling<bool>(
           () async {
-            final programId = Uuid().v4();
+            // add id to program.exercises
+            final exercises = program.exercises.map((exercise) {
+              return {
+                ...exercise,
+                'id': Uuid().v4(),
+              };
+            }).toList();
 
             program = ExerciseProgram(
-              id: programId,
+              id: Uuid().v4(),
               userId: currentUserId,
               programName: program.programName,
               dayOfExecution: program.dayOfExecution,
-              exercises: program.exercises,
+              exercises: exercises,
             );
 
             await _firestore
@@ -176,7 +182,7 @@ class ProgramService with ChangeNotifier {
                 .doc(program.id)
                 .set(program.toMap());
 
-            _programCache[program.id ?? ''] = program;
+            _programCache[program.id] = program;
 
             if (_programsSubscription == null) {
               _programs.add(program);

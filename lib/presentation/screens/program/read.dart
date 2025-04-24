@@ -237,13 +237,16 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                     onDelete: () =>
                         _showDeleteDialog('exercise', exercise['exerciseId']!),
                     onSelect: () {
-                      final exerciseId = exercise['exerciseId'];
+                      final apiId = exercise['exerciseId'];
+                      final exerciseId = exercise['id'];
                       context.go(
-                        AppRoutes.exerciseDetails
-                            .replaceAll(':exerciseId', exerciseId!)
-                            .replaceAll(':programId', widget.programId),
-                        extra: [exerciseId, widget.programId],
-                      );
+                          AppRoutes.exerciseDetails
+                              .replaceAll(':apiId', apiId!)
+                              .replaceAll(':exerciseId', exerciseId!),
+                          extra: {
+                            'exerciseId': apiId,
+                            'programId': exerciseId,
+                          });
                     },
                   );
                 },

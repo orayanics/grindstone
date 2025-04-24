@@ -58,10 +58,9 @@ GoRouter createRouter(BuildContext context) {
   final exerciseDetails = GoRoute(
       path: AppRoutes.exerciseDetails,
       builder: (context, state) {
+        final apiId = state.pathParameters['apiId'];
         final exerciseId = state.pathParameters['exerciseId'];
-        final programId = state.pathParameters['programId'];
-        return ExerciseDetailsView(
-            exerciseId: exerciseId!, programId: programId!);
+        return ExerciseDetailsView(apiId: apiId!, exerciseId: exerciseId!);
       });
 
   // Public shell route

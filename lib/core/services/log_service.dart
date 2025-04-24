@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:grindstone/core/model/data_log.dart';
 import 'package:grindstone/core/model/log.dart';
 import 'package:grindstone/core/services/user_provider.dart';
+import 'package:grindstone/presentation/components/snackbar/toast.dart';
 import 'package:uuid/uuid.dart';
 
 class LogService with ChangeNotifier {
@@ -82,11 +83,13 @@ class LogService with ChangeNotifier {
   ) async {
     if (!_isAuthenticated()) {
       _setError('User not authenticated');
+      FailToast.show('User not authenticated');
       return null;
     }
 
     if (_getCurrentUserId() == null) {
       _setError('No user found');
+      FailToast.show('No user found');
       return null;
     }
 
@@ -142,7 +145,7 @@ class LogService with ChangeNotifier {
         _endLoading();
 
         for (var log in logs) {
-          _logCache[log.id ?? ''] = log;
+          _logCache[log.id] = log;
         }
       }, onError: (error) {
         _setError('Failed to fetch logs: $error');
@@ -164,22 +167,23 @@ class LogService with ChangeNotifier {
   Future<bool> createLog(Log exerciseLog) async {
     return await _executeWithErrorHandling<bool>(
           () async {
-            final logId = Uuid().v4();
-
+            final userId = _getCurrentUserId();
+            if (userId == null) {
+              throw Exception('User ID is null. Cannot create log.');
+            }
             exerciseLog = Log(
-              id: logId,
-              programId: exerciseLog.programId,
-              userId: userProvider.userId ?? '',
-              logs: exerciseLog.logs ?? [],
+              id: exerciseLog.id,
+              userId: userId,
+              logs: exerciseLog.logs,
             );
 
             await _firestore
                 .collection('logs')
-                .doc(logId)
+                .doc(exerciseLog.id)
                 .set(exerciseLog.toMap());
 
             // update cache and realtime data
-            _logCache[logId] = exerciseLog;
+            _logCache[exerciseLog.id] = exerciseLog;
 
             if (_logSubscription != null) {
               _logSubscription!.cancel();
@@ -194,73 +198,69 @@ class LogService with ChangeNotifier {
 
   // fetch all logs based on userId and programId
   Future<List<Log>> fetchLogsByProgram({
-    DocumentSnapshot? lastDoc,
-    int limit = 10,
     bool refresh = false,
     String? programId,
   }) async {
-    if (_logSubscription != null && !refresh) {
-      return _logs;
-    }
-
-    await _executeWithErrorHandling<List<Log>>(
+    final result = await _executeWithErrorHandling<List<Log>>(
       () async {
-        Query query = _firestore
+        final doc = await _firestore
             .collection('logs')
             .where('userId', isEqualTo: userProvider.userId)
             .where('programId', isEqualTo: programId)
-            .limit(limit);
+            .get();
 
-        if (lastDoc != null) {
-          query = query.startAfterDocument(lastDoc);
-        }
-
-        final snapshot = await query.get();
-
-        final logs = snapshot.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          // Ensure logs field is never null
+        final logs = doc.docs.map((doc) {
+          final data = doc.data();
           if (data['logs'] == null) {
             data['logs'] = [];
           }
           return Log.fromMap(data);
         }).toList();
 
-        _logs = logs;
-
+        // update cache and realtime data
         for (var log in logs) {
-          _logCache[log.id ?? ''] = log;
+          _logCache[log.id] = log;
         }
 
         return logs;
       },
       'Failed to fetch logs',
     );
+
+    return result ?? [];
   }
 
-  // fetch log based on logId
-  Future<Log?> fetchLogById(String logId) async {
-    return await _executeWithErrorHandling<Log?>(
-      () async {
-        final doc = await _firestore.collection('logs').doc(logId).get();
-        if (doc.exists) {
-          final data = doc.data() as Map<String, dynamic>;
-          // Ensure logs field is never null
-          if (data['logs'] == null) {
-            data['logs'] = [];
-          }
-          print('oraya log found');
-          return Log.fromMap(data);
-        }
-        return null;
-      },
-      'Failed to fetch log',
-    );
+  Future<List<DataLog>> fetchLogById(String exerciseId) async {
+    return await _executeWithErrorHandling<List<DataLog>>(
+          () async {
+            final doc = await _firestore
+                .collection('logs')
+                .where('exerciseId', isEqualTo: exerciseId)
+                .get();
+
+            if (doc.docs.isEmpty) return [];
+            final data = doc.docs.first.data();
+            if (data['logs'] == null) {
+              data['logs'] = [];
+            }
+
+            final log = Log.fromMap(data);
+            _logCache[log.id ?? ''] = log;
+
+            print('Fetched log: ${log.toMap()}');
+            return log.logs;
+          },
+          'Failed to fetch log',
+        ) ??
+        [];
   }
 
   // update log based on programId, userId and
   Future<bool> updateLog(
-      {required String logId, required DataLog newLog}) async {
+      {required String logId,
+      required String programId,
+      required String exerciseId,
+      required DataLog newLog}) async {
     return await _executeWithErrorHandling<bool>(
           () async {
             if (!await _hasAccessToLog(logId)) return false;
@@ -269,7 +269,7 @@ class LogService with ChangeNotifier {
             final logCollection = _firestore.collection('logs').doc(logId);
 
             if (logDoc.exists) {
-              final data = logDoc.data() as Map<String, dynamic>?;
+              final data = logDoc.data();
               if (data != null && data['logs'] == null) {
                 await logCollection.update({
                   'logs': [newLog.toMap()]
@@ -285,7 +285,8 @@ class LogService with ChangeNotifier {
 
             if (_logSubscription == null) {
               await fetchLogsByProgram(refresh: true);
-              await fetchLogById(logId);
+              await fetchLogById(exerciseId);
+            } else {
               _logSubscription?.cancel();
               _logSubscription = null;
             }
