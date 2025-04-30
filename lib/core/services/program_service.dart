@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:grindstone/core/model/exercise_program.dart';
-import 'package:grindstone/core/services/user_session.dart';
+import 'package:grindstone/core/services/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
+
+import 'package:uuid/uuid.dart';
 
 class ProgramService with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -123,22 +125,33 @@ class ProgramService with ChangeNotifier {
           .collection('exercisePrograms')
           .where('userId', isEqualTo: currentUserId)
           .snapshots()
-          .listen((snapshot) {
-        final programs = snapshot.docs
-            .map((doc) => ExerciseProgram.fromMap(doc.data()))
-            .toList();
+          .listen(
+        (snapshot) {
+          final programs = snapshot.docs
+              .map((doc) => ExerciseProgram.fromMap(doc.data()))
+              .toList();
 
-        _programs = programs;
-        _endLoading();
+          _programs = programs;
+          _endLoading();
 
-        for (var program in programs) {
-          _programCache[program.id] = program;
-        }
-      }, onError: (error) {
-        _setError('Failed to listen for programs: $error');
-      });
+          for (var program in programs) {
+            _programCache[program.id] = program;
+          }
+        },
+        onError: (error) {
+          _setError('Failed to listen for programs: $error');
+          _endLoading();
+          _cancelSubscriptions();
+        },
+        onDone: () {
+          _endLoading();
+          _cancelSubscriptions();
+        },
+      );
     } catch (e) {
       _setError('Failed to start programs listener: $e');
+      _endLoading();
+      _cancelSubscriptions();
     }
   }
 
@@ -148,12 +161,20 @@ class ProgramService with ChangeNotifier {
 
     return await _executeWithErrorHandling<bool>(
           () async {
+            // add id to program.exercises
+            final exercises = program.exercises.map((exercise) {
+              return {
+                ...exercise,
+                'id': Uuid().v4(),
+              };
+            }).toList();
+
             program = ExerciseProgram(
-              id: program.id,
+              id: Uuid().v4(),
               userId: currentUserId,
               programName: program.programName,
               dayOfExecution: program.dayOfExecution,
-              exercises: program.exercises,
+              exercises: exercises,
             );
 
             await _firestore

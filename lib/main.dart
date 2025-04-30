@@ -7,10 +7,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:grindstone/core/config/theme.dart';
 import 'package:grindstone/core/routes/app_router.dart';
 import 'package:grindstone/core/config/firebase_options.dart';
-import 'package:grindstone/core/services/user_session.dart';
+import 'package:grindstone/core/services/user_provider.dart';
 
 import 'core/services/auth_service.dart';
 import 'core/services/program_service.dart';
+import 'core/services/log_service.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -35,12 +36,14 @@ class _MainAppState extends State<MainApp> {
   final _userProvider = UserProvider();
   late AuthService _authService;
   late ProgramService _programService;
+  late LogService _logService;
 
   @override
   void initState() {
     super.initState();
     _authService = AuthService(_userProvider);
     _programService = ProgramService(_userProvider);
+    _logService = LogService(_userProvider);
     _initServices();
   }
 
@@ -72,6 +75,9 @@ class _MainAppState extends State<MainApp> {
         ),
         ChangeNotifierProvider<ProgramService>.value(
           value: _programService,
+        ),
+        ChangeNotifierProvider<LogService>.value(
+          value: _logService,
         ),
       ],
       child: Builder(builder: (context) {

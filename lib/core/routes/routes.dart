@@ -11,7 +11,7 @@ class AppRoutes {
   static const String createProgram = '/create-program';
   static const String programs = '/programs';
   static const String program = '/program-details/:programId';
-  static const String exerciseDetails = '/exercise/:exerciseId';
+  static const String exerciseDetails = '/exercise/:apiId/:exerciseId';
 }
 
 // To call your routes:

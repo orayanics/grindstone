@@ -7,8 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:grindstone/core/config/colors.dart';
 import 'package:grindstone/presentation/components/header/logo_header.dart';
 import 'package:grindstone/core/services/auth_service.dart';
-
-// ignore lint issue here, it uses these packages for registration service
+import 'package:grindstone/core/model/signup_data.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -187,16 +186,15 @@ class _RegisterFormState extends State<RegisterForm> {
 
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
-      await authService.signup(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-        context: context,
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        age: int.parse(_ageController.text),
-        height: double.parse(_heightController.text),
-        weight: double.parse(_weightController.text),
-      );
+      await authService.signup(SignupData(
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
+          age: int.tryParse(_ageController.text) ?? 0,
+          height: double.tryParse(_heightController.text) ?? 0.0,
+          weight: double.tryParse(_weightController.text) ?? 0.0));
+      GoRouter.of(context).go(AppRoutes.home);
     } catch (e) {
       FailToast.show("Something went wrong: ${e.toString()}");
     }

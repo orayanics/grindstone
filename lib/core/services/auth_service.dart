@@ -4,12 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:grindstone/core/model/signup_data.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grindstone/core/exports/components.dart';
 import 'package:grindstone/core/routes/routes.dart';
-import 'package:grindstone/core/services/user_session.dart';
+import 'package:grindstone/core/services/user_provider.dart';
 import 'package:grindstone/core/model/user.dart' as my_user;
+import 'package:uuid/uuid.dart';
 
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -28,47 +30,38 @@ class AuthService extends ChangeNotifier {
     });
   }
 
-  Future<void> signup({
-    required String email,
-    required String password,
-    required BuildContext context,
-    required String firstName,
-    required String lastName,
-    required int age,
-    required double height,
-    required double weight,
-  }) async {
-    final userProvider = context.read<UserProvider>();
-    final navigator = GoRouter.of(context);
-
+  Future<void> signup(
+    SignupData currentUser,
+  ) async {
     try {
-      final UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(email: email, password: password);
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: currentUser.email,
+        password: currentUser.password,
+      );
 
       final User? user = userCredential.user;
 
       if (user != null) {
-        // Create the custom user object
         final newUser = my_user.User(
-          id: user.uid,
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          age: age,
-          height: height,
-          weight: weight,
+          id: Uuid().v4(),
+          firstName: currentUser.firstName,
+          lastName: currentUser.lastName,
+          email: currentUser.email,
+          age: currentUser.age,
+          height: currentUser.height,
+          weight: currentUser.weight,
         );
 
-        // Save to Firestore
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .set(newUser.toMap());
 
-        await userProvider.setUserId(user.uid);
+        await _userProvider.setUserId(user.uid);
+
         notifyListeners();
         SuccessToast.show("Registration Successful");
-        navigator.go(AppRoutes.home);
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage = "Registration failed";

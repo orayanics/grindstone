@@ -6,7 +6,7 @@ import 'package:grindstone/core/routes/routes.dart';
 import 'package:grindstone/core/services/program_service.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/auth_service.dart';
-import 'package:grindstone/core/services/user_session.dart';
+import 'package:grindstone/core/services/user_provider.dart';
 import 'package:grindstone/presentation/screens/program/widgets/program_info_card.dart';
 import 'package:grindstone/presentation/screens/program/widgets/update_program_exercises.dart';
 import 'package:grindstone/presentation/screens/program/widgets/exercise_list_item.dart';
@@ -230,15 +230,23 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                 itemBuilder: (context, index) {
                   final exercise = _program!.exercises[index];
                   return ExerciseListItem(
-                    exercise: exercise,
+                    exercise: {
+                      ...exercise,
+                      'programId': widget.programId,
+                    },
                     onDelete: () =>
                         _showDeleteDialog('exercise', exercise['exerciseId']!),
                     onSelect: () {
-                      final exerciseId = exercise['exerciseId'];
+                      final apiId = exercise['exerciseId'];
+                      final exerciseId = exercise['id'];
                       context.go(
-                        AppRoutes.exerciseDetails
-                            .replaceAll(':exerciseId', exerciseId!),
-                      );
+                          AppRoutes.exerciseDetails
+                              .replaceAll(':apiId', apiId!)
+                              .replaceAll(':exerciseId', exerciseId!),
+                          extra: {
+                            'exerciseId': apiId,
+                            'programId': exerciseId,
+                          });
                     },
                   );
                 },
