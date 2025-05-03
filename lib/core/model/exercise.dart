@@ -8,7 +8,8 @@ class Exercise {
   final List<String> equipments;
 
   Exercise(
-      {required this.id,
+      {
+        required this.id,
       required this.name,
       required this.instructions,
       required this.targetMuscles,

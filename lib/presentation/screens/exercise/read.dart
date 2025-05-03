@@ -25,37 +25,43 @@ class ExerciseDetailsView extends StatelessWidget {
     final apiId = state.pathParameters['apiId'] ?? '';
     final exerciseId = state.pathParameters['exerciseId'] ?? '';
 
-    return Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: white,
-        ),
-        child: Column(
-          children: [
-            ExerciseDetails(exerciseId: apiId),
-            ExerciseLogs(
-              exerciseId: exerciseId,
-            ),
-            ElevatedButton(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
-                    return LogExerciseModal(
-                      apiId: apiId,
-                      exerciseId: exerciseId,
+    return Scaffold(
+      backgroundColor: white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExerciseDetails(exerciseId: apiId),
+              const SizedBox(height: 20),
+              ExerciseLogs(exerciseId: exerciseId),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) {
+                        return LogExerciseModal(
+                          apiId: apiId,
+                          exerciseId: exerciseId,
+                        );
+                      },
                     );
                   },
-                );
-              },
-              child: const Text('Log Exercise'),
-            )
-          ],
-        ));
+                  child: const Text('Log Exercise'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
-// stateful widget for exercise logs
 class ExerciseLogs extends StatefulWidget {
   final String exerciseId;
   const ExerciseLogs({super.key, required this.exerciseId});
@@ -78,17 +84,17 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
   Future<void> _fetchExerciseLogs() async {
     try {
       final logService = Provider.of<LogService>(context, listen: false);
+      print('Fetching logs for exerciseId: ${widget.exerciseId}');
+
       final logs = await logService.fetchLogById(widget.exerciseId);
+      print('Fetched logs: $logs');
 
       setState(() {
-        if (logs.isEmpty) {
-          _logs = [];
-        } else {
-          _logs = logs;
-        }
+        _logs = logs;
         _isLoading = false;
       });
     } catch (e) {
+      print('Error fetching logs: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -99,37 +105,40 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Exercise Logs'),
+        Text('Exercise Logs', style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 10),
         if (_isLoading)
           const Center(child: CircularProgressIndicator())
         else if (_error != null)
           Center(child: Text(_error!))
-        else
-          Column(
-            children: [
-              if (_logs.isEmpty)
-                const Text('No logs available')
-              else
-                ..._logs.map((log) {
-                  return Column(
+        else if (_logs.isEmpty)
+            const Text('No logs available')
+          else
+            ..._logs.map((log) {
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Weight: ${log.weight}'),
                       Text('Reps: ${log.reps}'),
                       Text('RIR: ${log.rir}'),
+                      Text('Action: ${log.action}'),
                       Text('Date: ${Date.parseDate(log.date)}'),
                     ],
-                  );
-                })
-            ],
-          ),
+                  ),
+                ),
+              );
+            }),
       ],
     );
   }
 }
 
-// stateful widget for exercise details
 class ExerciseDetails extends StatefulWidget {
   final String exerciseId;
 
@@ -176,6 +185,7 @@ class _ExerciseDetailsState extends State<ExerciseDetails> {
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ExerciseDetailsHeader(
           exerciseName: _exercise?['name'] ?? '',
@@ -198,32 +208,35 @@ class ExerciseDetailsBody extends StatelessWidget {
   final List<String> secondaryMuscles;
   final List<String> instructions;
 
-  const ExerciseDetailsBody(
-      {super.key,
-      required this.bodyParts,
-      required this.targetMuscles,
-      required this.secondaryMuscles,
-      required this.instructions});
+  const ExerciseDetailsBody({
+    super.key,
+    required this.bodyParts,
+    required this.targetMuscles,
+    required this.secondaryMuscles,
+    required this.instructions,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-            'Body Parts: ${bodyParts.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-        Text(
-            'Target Muscles: ${targetMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-        Text(
-            'Secondary Muscles: ${secondaryMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-        Text('Instructions:'),
+        Text('Body Parts: ${bodyParts.join(', ')}'),
+        Text('Target Muscles: ${targetMuscles.join(', ')}'),
+        Text('Secondary Muscles: ${secondaryMuscles.join(', ')}'),
+        const SizedBox(height: 10),
+        Text('Instructions:', style: Theme.of(context).textTheme.titleMedium),
         ...instructions.map((instruction) {
-          return Text(instruction.replaceAll('[', '').replaceAll(']', ''),
-              textAlign: TextAlign.start,
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Text(
+              instruction.trim(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: textLight,
-                  ));
-        }),
+                color: textLight,
+              ),
+            ),
+          );
+        }).toList(),
         const SizedBox(height: 16),
       ],
     );
@@ -234,65 +247,49 @@ class ExerciseDetailsHeader extends StatelessWidget {
   final String exerciseName;
   final String lastUpdated;
 
-  const ExerciseDetailsHeader(
-      {super.key, required this.exerciseName, required this.lastUpdated});
+  const ExerciseDetailsHeader({
+    super.key,
+    required this.exerciseName,
+    required this.lastUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(
-        exerciseName,
-        style: Theme.of(context).textTheme.headlineMedium,
-      ),
-      RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: 'Last Update ',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: accentPurple,
-                  ),
-            ),
-            TextSpan(
-              text: 'on $lastUpdated',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: textLight,
-                  ),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          exerciseName,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
-      ),
-      const Divider(),
-      Text(
-        'Follow along the instructions!',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: textLight,
-            ),
-      ),
-      const SizedBox(height: 16),
-    ]);
-  }
-}
-
-class ExerciseDetailsContainer extends StatelessWidget {
-  const ExerciseDetailsContainer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: white,
-      ),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [const Text('Home')],
+        const SizedBox(height: 4),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: 'Last Update ',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: accentPurple,
+                ),
+              ),
+              TextSpan(
+                text: 'on $lastUpdated',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: textLight,
+                ),
+              ),
+            ],
           ),
         ),
-      ),
+        const Divider(),
+        Text(
+          'Follow along the instructions!',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: textLight,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

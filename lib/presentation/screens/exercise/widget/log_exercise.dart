@@ -45,6 +45,30 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
       return;
     }
 
+    String action = "No Logs Found";
+
+    if (reps >= 7 && rir >= 1) {
+      action = 'Increase';
+    } else if (reps >= 7 && rir == 0) {
+      action = 'Maintain';
+    } else if (reps == 6 && rir == 0) {
+      action = 'Maintain';
+    } else if (reps == 6 && rir >= 1) {
+      action = 'Increase';
+    } else if (reps == 5 && rir == 0) {
+      action = 'Maintain';
+    } else if (reps == 5 && rir >= 1) {
+      action = 'Increase';
+    } else if (reps == 4 && rir == 0) {
+      action = 'Maintain';
+    } else if (reps == 4 && rir >= 1) {
+      action = 'Increase';
+    } else if (reps <= 3 && rir == 0) {
+      action = 'Decrease';
+    } else if (reps <= 3 && rir >= 1) {
+      action = 'Decrease';
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -54,7 +78,9 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
         weight: weight,
         reps: reps,
         rir: rir,
+        action: action,
         date: DateTime.now().toIso8601String(),
+
       );
 
       // id is program id

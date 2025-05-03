@@ -5,6 +5,7 @@ import 'package:grindstone/core/services/program_service.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:grindstone/core/services/user_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class UpdateProgramExercises extends StatefulWidget {
   const UpdateProgramExercises(
@@ -44,8 +45,9 @@ class _UpdateProgramExercisesState extends State<UpdateProgramExercises> {
   }
 
   void _addExercise(Map<String, String> exercise) {
+    final String id = Uuid().v4();
     setState(() {
-      _selectedExercises.add(exercise);
+      _selectedExercises.add({...exercise,'id': id});
     });
   }
 
