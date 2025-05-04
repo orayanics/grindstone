@@ -4,6 +4,8 @@ import 'package:grindstone/core/model/data_log.dart';
 import 'package:grindstone/core/services/log_service.dart';
 import 'package:grindstone/core/exports/components.dart';
 import 'package:provider/provider.dart';
+import 'package:grindstone/core/config/colors.dart';
+
 
 class LogExerciseModal extends StatefulWidget {
   final String apiId;
@@ -83,8 +85,7 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
 
       );
 
-      // id is program id
-      // exercise id is from api
+
       final log = Log(
         id: widget.exerciseId,
         exerciseId: widget.apiId,
@@ -106,36 +107,185 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Check if context is still valid
-    if (!mounted) return Container();
+ @override
+ Widget build(BuildContext context) {
+   return AlertDialog(
+     backgroundColor: white,
+     shape: RoundedRectangleBorder(
+       borderRadius: BorderRadius.circular(16),
+     ),
+     elevation: 1,
+     title: Text(
+       "Log Exercise",
+       textAlign: TextAlign.center,
+       style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+             color: accentRed,
+           ),
+     ),
+     content: Column(
+       mainAxisSize: MainAxisSize.min,
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
 
-    return Dialog(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _weightController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: "Weight Lifted (kg)"),
-          ),
-          TextField(
-            controller: _repsController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: "Reps Performed"),
-          ),
-          TextField(
-            controller: rirController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: "RIR"),
-          ),
-          AccentButton(
-            onPressed: _logExercise,
-            label: 'Log',
-          ),
-        ],
-      ),
-    );
-  }
+         Text.rich(
+           TextSpan(
+             text: "Weight Lifted (kg) ",
+             style: Theme.of(context).textTheme.bodyMedium,
+             children: [
+               TextSpan(
+                 text: "*",
+                 style: TextStyle(color: accentRed),
+               ),
+             ],
+           ),
+         ),
+         const SizedBox(height: 8),
+         Row(
+           children: [
+             IconButton(
+               icon: const Icon(Icons.remove),
+               onPressed: () {
+                 final currentValue = int.tryParse(_weightController.text) ?? 0;
+                 _weightController.text = (currentValue > 0 ? currentValue - 1 : 0).toString();
+               },
+             ),
+             Expanded(
+               child: TextField(
+                 controller: _weightController,
+                 keyboardType: TextInputType.number,
+                 decoration: InputDecoration(
+                   hintText:'0' ,
+                   filled: true,
+                   fillColor: lightGray,
+                   border: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(8.0),
+                     borderSide: BorderSide.none,
+                   ),
+                 ),
+               ),
+             ),
+             IconButton(
+               icon: const Icon(Icons.add),
+               onPressed: () {
+                 final currentValue = int.tryParse(_weightController.text) ?? 0;
+                 _weightController.text = (currentValue + 1).toString();
+               },
+             ),
+           ],
+         ),
+         const SizedBox(height: 16),
+
+
+         Text.rich(
+           TextSpan(
+             text: "Reps Performed ",
+             style: Theme.of(context).textTheme.bodyMedium,
+             children: [
+               TextSpan(
+                 text: "*",
+                 style: TextStyle(color: accentRed),
+               ),
+             ],
+           ),
+         ),
+         const SizedBox(height: 8),
+         Row(
+           children: [
+             IconButton(
+               icon: const Icon(Icons.remove),
+               onPressed: () {
+                 final currentValue = int.tryParse(_repsController.text) ?? 0;
+                 _repsController.text = (currentValue > 0 ? currentValue - 1 : 0).toString();
+               },
+             ),
+             Expanded(
+               child: TextField(
+                 controller: _repsController,
+                 keyboardType: TextInputType.number,
+                 decoration: InputDecoration(
+                   hintText:'0' ,
+                   filled: true,
+                   fillColor: lightGray,
+                   border: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(8.0),
+                     borderSide: BorderSide.none,
+                   ),
+                 ),
+               ),
+             ),
+             IconButton(
+               icon: const Icon(Icons.add),
+               onPressed: () {
+                 final currentValue = int.tryParse(_repsController.text) ?? 0;
+                 _repsController.text = (currentValue + 1).toString();
+               },
+             ),
+           ],
+         ),
+         const SizedBox(height: 16),
+
+
+         Text.rich(
+           TextSpan(
+             text: "RIR ",
+             style: Theme.of(context).textTheme.bodyMedium,
+             children: [
+               TextSpan(
+                 text: "*",
+                 style: TextStyle(color: accentRed),
+               ),
+             ],
+           ),
+         ),
+         const SizedBox(height: 8),
+         Row(
+           children: [
+             IconButton(
+               icon: const Icon(Icons.remove),
+               onPressed: () {
+                 final currentValue = int.tryParse(rirController.text) ?? 0;
+                 rirController.text = (currentValue > 0 ? currentValue - 1 : 0).toString();
+               },
+             ),
+             Expanded(
+               child: TextField(
+                 controller: rirController,
+                 keyboardType: TextInputType.number,
+                 decoration: InputDecoration(
+                   hintText:'0' ,
+                   filled: true,
+                   fillColor: lightGray,
+                   border: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(8.0),
+                     borderSide: BorderSide.none,
+                   ),
+                 ),
+               ),
+             ),
+             IconButton(
+               icon: const Icon(Icons.add),
+               onPressed: () {
+                 final currentValue = int.tryParse(rirController.text) ?? 0;
+                 rirController.text = (currentValue + 1).toString();
+               },
+             ),
+           ],
+         ),
+       ],
+     ),
+     actions: [
+       SizedBox(
+         width: double.infinity,
+         child: AccentButton(
+           onPressed: _logExercise,
+           label: _isSubmitting
+               ? const CircularProgressIndicator(
+                   color: white,
+                 )
+               : 'Log',
+         ),
+       ),
+     ],
+   );
+ }
 }
