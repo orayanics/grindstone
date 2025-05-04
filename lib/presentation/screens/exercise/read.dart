@@ -12,19 +12,23 @@ import 'widget/log_exercise.dart';
 class ExerciseDetailsView extends StatelessWidget {
   final String apiId;
   final String exerciseId;
+  final String programId;
 
   const ExerciseDetailsView({
     super.key,
     required this.apiId,
     required this.exerciseId,
+    required this.programId,
   });
 
   @override
   Widget build(BuildContext context) {
+
     final state = GoRouter.of(context).routerDelegate.currentConfiguration;
     final apiId = state.pathParameters['apiId'] ?? '';
     final exerciseId = state.pathParameters['exerciseId'] ?? '';
-
+    final programId = (state.extra as Map<String, dynamic>?)?['programId'] ?? '';
+    print('ExerciseDetailsView received programId: $programId');
     return Scaffold(
       backgroundColor: white,
       body: SafeArea(
@@ -49,6 +53,7 @@ class ExerciseDetailsView extends StatelessWidget {
               return LogExerciseModal(
                 apiId: apiId,
                 exerciseId: exerciseId,
+                programId: programId,
               );
             },
           );

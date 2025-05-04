@@ -60,7 +60,9 @@ GoRouter createRouter(BuildContext context) {
       builder: (context, state) {
         final apiId = state.pathParameters['apiId'];
         final exerciseId = state.pathParameters['exerciseId'];
-        return ExerciseDetailsView(apiId: apiId!, exerciseId: exerciseId!);
+        final extra = state.extra as Map<String, dynamic>?; // Cast extra to Map
+        final programId = extra?['programId'] ?? ''; // Extract programId
+        return ExerciseDetailsView(apiId: apiId!, exerciseId: exerciseId!, programId: programId!);
       });
 
   // Public shell route
