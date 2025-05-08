@@ -3,7 +3,6 @@ import 'package:grindstone/core/config/colors.dart';
 import 'package:grindstone/core/model/data_log.dart';
 import 'package:grindstone/core/services/exercise_api.dart';
 import 'package:grindstone/core/services/log_service.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'widget/log_exercise.dart';
 
@@ -12,20 +11,18 @@ class ExerciseDetailsView extends StatelessWidget {
   final String exerciseId;
   final String programId;
 
-  const ExerciseDetailsView({
+  ExerciseDetailsView({
     super.key,
     required this.apiId,
     required this.exerciseId,
     required this.programId,
   });
 
+  final GlobalKey<_ExerciseLogsState> _logsKey =
+      GlobalKey<_ExerciseLogsState>();
+
   @override
   Widget build(BuildContext context) {
-    final state = GoRouter.of(context).routerDelegate.currentConfiguration;
-    final apiId = state.pathParameters['apiId'] ?? '';
-    final exerciseId = state.pathParameters['exerciseId'] ?? '';
-    final programId =
-        (state.extra as Map<String, dynamic>?)?['programId'] ?? '';
     return Scaffold(
       backgroundColor: white,
       body: SafeArea(
@@ -36,7 +33,10 @@ class ExerciseDetailsView extends StatelessWidget {
             children: [
               ExerciseDetails(exerciseId: apiId),
               const SizedBox(height: 20),
-              ExerciseLogs(exerciseId: exerciseId),
+              ExerciseLogs(
+                key: _logsKey,
+                exerciseId: exerciseId,
+              ),
               const SizedBox(height: 80),
             ],
           ),
@@ -51,6 +51,9 @@ class ExerciseDetailsView extends StatelessWidget {
                 apiId: apiId,
                 exerciseId: exerciseId,
                 programId: programId,
+                onLogSuccess: () {
+                  _logsKey.currentState?._fetchExerciseLogs();
+                },
               );
             },
           );

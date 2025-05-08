@@ -11,12 +11,14 @@ class LogExerciseModal extends StatefulWidget {
   final String apiId;
   final String exerciseId;
   final String? programId;
+  final VoidCallback? onLogSuccess;
 
   const LogExerciseModal({
     super.key,
     required this.apiId,
     required this.exerciseId,
     required this.programId,
+    this.onLogSuccess,
   });
 
   @override
@@ -105,6 +107,7 @@ class _LogExerciseModalState extends State<LogExerciseModal> {
           FailToast.show('Program ID is missing');
         }
         SuccessToast.show('Exercise logged successfully');
+        widget.onLogSuccess?.call();
         Navigator.of(context).pop();
       } else {
         FailToast.show('Failed to log exercise');
