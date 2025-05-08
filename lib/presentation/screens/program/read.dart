@@ -154,10 +154,14 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
 
     if (success) {
       GoRouter.of(context).pop();
-      GoRouter.of(context).go(AppRoutes.programs);
-      SuccessToast.show('Program deleted successfully');
+      if (type == 'program') {
+        GoRouter.of(context).go(AppRoutes.programs);
+      } else {
+        await _refreshProgram();
+      }
+      SuccessToast.show('Deleted successfully');
     } else {
-      FailToast.show(programService.errorMessage ?? 'Failed to delete program');
+      FailToast.show(programService.errorMessage ?? 'Failed to delete');
     }
 
     setState(() {
