@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:grindstone/core/services/user_provider.dart';
 import 'package:grindstone/presentation/screens/program/widgets/exercise_search_dialog.dart';
-import 'package:grindstone/core/config/colors.dart';
 
 class UpdateProgramExercises extends StatefulWidget {
   const UpdateProgramExercises({

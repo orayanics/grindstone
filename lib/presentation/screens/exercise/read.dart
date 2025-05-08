@@ -111,17 +111,20 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
             constraints.maxWidth > 600; // Adjust breakpoint as needed
 
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: isLargeScreen
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
           children: [
             Align(
-              alignment:
-                  isLargeScreen ? Alignment.center : Alignment.centerLeft,
-              child: Text(
-                'Latest Log',
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: isLargeScreen ? TextAlign.center : TextAlign.start,
-              ),
-            ),
+                alignment:
+                    isLargeScreen ? Alignment.center : Alignment.centerLeft,
+                child: Text(
+                  'Latest Log',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                  textAlign: isLargeScreen ? TextAlign.center : TextAlign.start,
+                )),
             const SizedBox(height: 10),
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
@@ -130,28 +133,24 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
             else if (_logs.isEmpty)
               const Text('No logs available')
             else
-              Center(
-                child: Wrap(
-                  alignment: isLargeScreen
-                      ? WrapAlignment.center // Center for larger screens
-                      : WrapAlignment.start, // Left-align for smaller screens
-                  spacing: 16.0,
-                  runSpacing: 12.0,
-                  children: _logs.map((log) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildLogItem('${log.weight} kg'),
-                        const SizedBox(width: 8),
-                        _buildLogItem('${log.reps} reps'),
-                        const SizedBox(width: 8),
-                        _buildLogItem('${log.rir} RIR'),
-                        const SizedBox(width: 8),
-                        _buildLogItem('${log.action}'),
-                      ],
-                    );
-                  }).toList(),
-                ),
+              Wrap(
+                spacing: 16.0,
+                runSpacing: 12.0,
+                children: _logs.map((log) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildLogItem('${log.weight} kg'),
+                      const SizedBox(width: 8),
+                      _buildLogItem('${log.reps} reps'),
+                      const SizedBox(width: 8),
+                      _buildLogItem('${log.rir} RIR'),
+                      const SizedBox(width: 8),
+                      _buildLogItem(log.action),
+                    ],
+                  );
+                }).toList(),
               ),
           ],
         );
@@ -284,9 +283,15 @@ class ExerciseDetailsBody extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         instructions
-                            .map((instruction) => instruction.trim())
-                            .join(' ')
-                            .replaceAll('Step', '\nStep')
+                            .asMap()
+                            .entries
+                            .map((entry) {
+                              final stepNumber = entry.key + 1;
+                              final instruction = entry.value.trim();
+                              return instruction.replaceAll(
+                                  'Step:$stepNumber', 'Step $stepNumber:');
+                            })
+                            .join('\n')
                             .replaceAll('[', '')
                             .replaceAll(']', ''),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -301,7 +306,9 @@ class ExerciseDetailsBody extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Target Muscles',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
               textAlign: isLargeScreen ? TextAlign.center : TextAlign.start,
             ),
             const SizedBox(height: 8),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:grindstone/core/exports/components.dart';
 import 'package:grindstone/core/model/exercise_program.dart';
 import 'package:grindstone/core/services/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -168,10 +169,8 @@ class ProgramService with ChangeNotifier {
       await programRef.update({
         'lastUpdated': newTimestamp,
       });
-
-      print('lastUpdated field updated successfully');
     } catch (e) {
-      print('Failed to update lastUpdated field: $e');
+      FailToast.show('Failed to update lastUpdated field: $e');
     }
   }
 
