@@ -57,7 +57,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
             ),
           ),
         Container(
-          width: MediaQuery.of(context).size.width * 0.9,
+          width: MediaQuery.of(context).size.width * 1,
           decoration: BoxDecoration(
             color: widget.isPrimary ? white : lightGray,
             borderRadius: BorderRadius.circular(16),

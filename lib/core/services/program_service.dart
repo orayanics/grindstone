@@ -74,8 +74,6 @@ class ProgramService with ChangeNotifier {
     notifyListeners();
   }
 
-  
-
   String? getLastUpdated(String programId) {
     return _programsLastUpdated[programId];
   }
@@ -164,7 +162,8 @@ class ProgramService with ChangeNotifier {
 
   Future<void> updateLastUpdated(String programId, String newTimestamp) async {
     try {
-      final programRef = _firestore.collection('exercisePrograms').doc(programId);
+      final programRef =
+          _firestore.collection('exercisePrograms').doc(programId);
 
       await programRef.update({
         'lastUpdated': newTimestamp,
@@ -175,6 +174,7 @@ class ProgramService with ChangeNotifier {
       print('Failed to update lastUpdated field: $e');
     }
   }
+
   Future<bool> createProgram(ExerciseProgram program) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return false;
@@ -311,7 +311,12 @@ class ProgramService with ChangeNotifier {
                 .collection('exercisePrograms')
                 .doc(programId)
                 .update({
-              'exercises': FieldValue.arrayUnion(exercises),
+              'exercises': FieldValue.arrayUnion(exercises
+                  .map((exercise) => {
+                        ...exercise,
+                        'id': Uuid().v4(),
+                      })
+                  .toList()),
             });
 
             if (_programsSubscription == null) {
