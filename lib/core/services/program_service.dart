@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 class ProgramService with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final UserProvider userProvider;
+  final Map<String, String> _programsLastUpdated = {};
 
   ProgramService(this.userProvider);
 
@@ -71,6 +72,12 @@ class ProgramService with ChangeNotifier {
   void _endLoading() {
     _isLoading = false;
     notifyListeners();
+  }
+
+  
+
+  String? getLastUpdated(String programId) {
+    return _programsLastUpdated[programId];
   }
 
   /// handle crud with try-catch
@@ -155,6 +162,19 @@ class ProgramService with ChangeNotifier {
     }
   }
 
+  Future<void> updateLastUpdated(String programId, String newTimestamp) async {
+    try {
+      final programRef = _firestore.collection('exercisePrograms').doc(programId);
+
+      await programRef.update({
+        'lastUpdated': newTimestamp,
+      });
+
+      print('lastUpdated field updated successfully');
+    } catch (e) {
+      print('Failed to update lastUpdated field: $e');
+    }
+  }
   Future<bool> createProgram(ExerciseProgram program) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return false;

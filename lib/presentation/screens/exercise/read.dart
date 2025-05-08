@@ -6,56 +6,69 @@ import 'package:grindstone/core/services/log_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grindstone/core/utils/date.dart';
 import 'package:provider/provider.dart';
-
 import 'widget/log_exercise.dart';
+
 
 class ExerciseDetailsView extends StatelessWidget {
   final String apiId;
   final String exerciseId;
+  final String programId;
 
   const ExerciseDetailsView({
     super.key,
     required this.apiId,
     required this.exerciseId,
+    required this.programId,
   });
 
   @override
   Widget build(BuildContext context) {
+
     final state = GoRouter.of(context).routerDelegate.currentConfiguration;
     final apiId = state.pathParameters['apiId'] ?? '';
     final exerciseId = state.pathParameters['exerciseId'] ?? '';
-
-    return Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: white,
+    final programId = (state.extra as Map<String, dynamic>?)?['programId'] ?? '';
+    print('ExerciseDetailsView received programId: $programId');
+    return Scaffold(
+      backgroundColor: white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ExerciseDetails(exerciseId: apiId),
+              const SizedBox(height: 20),
+              ExerciseLogs(exerciseId: exerciseId),
+           const SizedBox(height: 80),
+            ],
+          ),
         ),
-        child: Column(
-          children: [
-            ExerciseDetails(exerciseId: apiId),
-            ExerciseLogs(
-              exerciseId: exerciseId,
-            ),
-            ElevatedButton(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
-                    return LogExerciseModal(
-                      apiId: apiId,
-                      exerciseId: exerciseId,
-                    );
-                  },
-                );
-              },
-              child: const Text('Log Exercise'),
-            )
-          ],
-        ));
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return LogExerciseModal(
+                apiId: apiId,
+                exerciseId: exerciseId,
+                programId: programId,
+              );
+            },
+          );
+        },
+        backgroundColor: accentPurple,
+        child: const Icon(
+          Icons.edit,
+          color: Colors.white,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
   }
 }
 
-// stateful widget for exercise logs
 class ExerciseLogs extends StatefulWidget {
   final String exerciseId;
   const ExerciseLogs({super.key, required this.exerciseId});
@@ -78,17 +91,17 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
   Future<void> _fetchExerciseLogs() async {
     try {
       final logService = Provider.of<LogService>(context, listen: false);
+
+
       final logs = await logService.fetchLogById(widget.exerciseId);
 
+
       setState(() {
-        if (logs.isEmpty) {
-          _logs = [];
-        } else {
-          _logs = logs;
-        }
+        _logs = logs;
         _isLoading = false;
       });
     } catch (e) {
+
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -98,38 +111,73 @@ class _ExerciseLogsState extends State<ExerciseLogs> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text('Exercise Logs'),
-        if (_isLoading)
-          const Center(child: CircularProgressIndicator())
-        else if (_error != null)
-          Center(child: Text(_error!))
-        else
-          Column(
-            children: [
-              if (_logs.isEmpty)
-                const Text('No logs available')
-              else
-                ..._logs.map((log) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Weight: ${log.weight}'),
-                      Text('Reps: ${log.reps}'),
-                      Text('RIR: ${log.rir}'),
-                      Text('Date: ${Date.parseDate(log.date)}'),
-                    ],
-                  );
-                })
-            ],
-          ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isLargeScreen = constraints.maxWidth > 600; // Adjust breakpoint as needed
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: isLargeScreen ? Alignment.center : Alignment.centerLeft,
+              child: Text(
+                'Latest Log',
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: isLargeScreen ? TextAlign.center : TextAlign.start,
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (_error != null)
+              Center(child: Text(_error!))
+            else if (_logs.isEmpty)
+              const Text('No logs available')
+            else
+              Center(
+                child: Wrap(
+                  alignment: isLargeScreen
+                      ? WrapAlignment.center // Center for larger screens
+                      : WrapAlignment.start, // Left-align for smaller screens
+                  spacing: 16.0,
+                  runSpacing: 12.0,
+                  children: _logs.map((log) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildLogItem('${log.weight} kg'),
+                        const SizedBox(width: 8),
+                        _buildLogItem('${log.reps} reps'),
+                        const SizedBox(width: 8),
+                        _buildLogItem('${log.rir} RIR'),
+                        const SizedBox(width: 8),
+                        _buildLogItem('${log.action}'),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLogItem(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: accentPurple,
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: white),
+      ),
     );
   }
 }
 
-// stateful widget for exercise details
 class ExerciseDetails extends StatefulWidget {
   final String exerciseId;
 
@@ -176,6 +224,7 @@ class _ExerciseDetailsState extends State<ExerciseDetails> {
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ExerciseDetailsHeader(
           exerciseName: _exercise?['name'] ?? '',
@@ -198,34 +247,92 @@ class ExerciseDetailsBody extends StatelessWidget {
   final List<String> secondaryMuscles;
   final List<String> instructions;
 
-  const ExerciseDetailsBody(
-      {super.key,
-      required this.bodyParts,
-      required this.targetMuscles,
-      required this.secondaryMuscles,
-      required this.instructions});
+  const ExerciseDetailsBody({
+    super.key,
+    required this.bodyParts,
+    required this.targetMuscles,
+    required this.secondaryMuscles,
+    required this.instructions,
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-            'Body Parts: ${bodyParts.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-        Text(
-            'Target Muscles: ${targetMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-        Text(
-            'Secondary Muscles: ${secondaryMuscles.join(', ').replaceAll('[', '').replaceAll(']', '')}'),
-        Text('Instructions:'),
-        ...instructions.map((instruction) {
-          return Text(instruction.replaceAll('[', '').replaceAll(']', ''),
-              textAlign: TextAlign.start,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: textLight,
-                  ));
-        }),
-        const SizedBox(height: 16),
-      ],
+@override
+Widget build(BuildContext context) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final isLargeScreen = constraints.maxWidth > 600; // Adjust breakpoint as needed
+
+      return Column(
+        crossAxisAlignment: isLargeScreen
+            ? CrossAxisAlignment.center // Center for larger screens
+            : CrossAxisAlignment.start, // Left-align for smaller screens
+        children: [
+          Center(
+            child: Card(
+              color: white,
+              elevation: 4.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Follow these steps to perform the exercise:',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: textLight,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      instructions.map((instruction) => instruction.trim()).join(' ').replaceAll('Step', '\nStep').replaceAll('[', '').replaceAll(']', ''),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: textLight,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Target Muscles',
+            style: Theme.of(context).textTheme.titleLarge,
+            textAlign: isLargeScreen ? TextAlign.center : TextAlign.start,
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            alignment: isLargeScreen
+                ? WrapAlignment.center // Center chips for larger screens
+                : WrapAlignment.start, // Left-align chips for smaller screens
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: [
+              ...bodyParts.map((part) => _buildOutlinedChip(part.replaceAll('[', '').replaceAll(']', ''))),
+              ...targetMuscles.map((muscle) => _buildOutlinedChip(muscle.replaceAll('[', '').replaceAll(']', ''))),
+              ...secondaryMuscles.map((muscle) => _buildOutlinedChip(muscle.replaceAll('[', '').replaceAll(']', ''))),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+}
+
+  Widget _buildOutlinedChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        border: Border.all(color: accentRed, width: 1.5),
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: accentRed),
+      ),
     );
   }
 }
@@ -234,65 +341,44 @@ class ExerciseDetailsHeader extends StatelessWidget {
   final String exerciseName;
   final String lastUpdated;
 
-  const ExerciseDetailsHeader(
-      {super.key, required this.exerciseName, required this.lastUpdated});
+  const ExerciseDetailsHeader({
+    super.key,
+    required this.exerciseName,
+    required this.lastUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(
-        exerciseName,
-        style: Theme.of(context).textTheme.headlineMedium,
-      ),
-      RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: 'Last Update ',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: accentPurple,
-                  ),
-            ),
-            TextSpan(
-              text: 'on $lastUpdated',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: textLight,
-                  ),
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          exerciseName,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
-      ),
-      const Divider(),
-      Text(
-        'Follow along the instructions!',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: textLight,
-            ),
-      ),
-      const SizedBox(height: 16),
-    ]);
-  }
-}
-
-class ExerciseDetailsContainer extends StatelessWidget {
-  const ExerciseDetailsContainer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: white,
-      ),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [const Text('Home')],
+        const SizedBox(height: 4),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: 'Last Update ',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: accentPurple,
+                    ),
+              ),
+              TextSpan(
+                text: 'on $lastUpdated',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: textLight,
+                    ),
+              ),
+            ],
           ),
         ),
-      ),
+        const Divider(),
+
+        const SizedBox(height: 16),
+      ],
     );
   }
 }
