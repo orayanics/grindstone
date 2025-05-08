@@ -240,7 +240,6 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                       final apiId = exercise['exerciseId'];
                       final exerciseId = exercise['id'];
 
-                      print('Navigating to ExerciseDetailsView with programId: ${widget.programId}');
                       context.go(
                           AppRoutes.exerciseDetails
                               .replaceAll(':apiId', apiId!)
@@ -248,9 +247,7 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                           extra: {
                             'exerciseId': apiId,
                             'programId': widget.programId,
-
-                          }
-                          );
+                          });
                     },
                   );
                 },
