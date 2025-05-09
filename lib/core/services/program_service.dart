@@ -408,4 +408,45 @@ class ProgramService with ChangeNotifier {
   Future<ExerciseProgram?> refreshProgram(String programId) async {
     return await fetchProgramById(programId, refresh: true);
   }
+
+  Future<Map<String, dynamic>?> fetchMostRecentExercise() async {
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId == null) return null;
+
+    try {
+      // Query Firestore to get programs sorted by lastUpdated in descending order
+      final snapshot = await _firestore
+          .collection('exercisePrograms')
+          .where('userId', isEqualTo: currentUserId)  // Ensure you pass the current user's ID here
+          .orderBy('lastUpdated', descending: true)  // Order by lastUpdated in descending order
+          .limit(1)  // Limit to the most recent program
+          .get();
+
+
+      if (snapshot.docs.isEmpty) {
+        return null;
+      }
+
+      final doc = snapshot.docs.first;
+      final data = doc.data();
+      final exercises = List<Map<String, dynamic>>.from(data['exercises'] ?? []);
+
+      return {
+        'id': doc.id,
+        'programName': data['programName'],
+        'dayOfExecution': data['dayOfExecution'],
+        'exercises': exercises,
+        'lastUpdated': data['lastUpdated'],
+      };
+
+    } catch (e) {
+      print('Error fetching most recent exercise: $e');
+      return null;
+    }
+  }
+
+
+
+
+
 }
