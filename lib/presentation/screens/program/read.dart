@@ -30,6 +30,8 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
   bool _isLoading = true;
   String? _errorMessage;
   ExerciseProgram? _program;
+  String _filterCriteria = 'All'; // Default filter criteria
+  String? _searchQuery = ''; // Search query for exercises
 
   @override
   void initState() {
@@ -109,7 +111,7 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
 
     try {
       final programService =
-          Provider.of<ProgramService>(context, listen: false);
+      Provider.of<ProgramService>(context, listen: false);
       _program = await programService.refreshProgram(widget.programId);
 
       if (mounted) {
@@ -147,7 +149,7 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
       success = await programService.deleteProgram(widget.programId);
     } else if (type == 'exercise') {
       success =
-          await programService.deleteExercise(widget.programId, exerciseId);
+      await programService.deleteExercise(widget.programId, exerciseId);
     }
 
     if (!mounted) return;
@@ -181,6 +183,33 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
         });
   }
 
+  void _onFilterChanged(String? value) {
+    setState(() {
+      _filterCriteria = value ?? 'All'; // Update the filter criteria
+    });
+  }
+
+  List<Map<String, dynamic>> _getFilteredExercises() {
+    List<Map<String, dynamic>> filteredExercises = _program!.exercises;
+
+    if (_filterCriteria != 'All') {
+      filteredExercises = filteredExercises
+          .where((exercise) =>
+      exercise['type']?.toLowerCase() == _filterCriteria.toLowerCase())
+          .toList();
+    }
+
+    if (_searchQuery != null && _searchQuery!.isNotEmpty) {
+      filteredExercises = filteredExercises
+          .where((exercise) => exercise['name']
+          .toLowerCase()
+          .contains(_searchQuery!.toLowerCase()))
+          .toList();
+    }
+
+    return filteredExercises;
+  }
+
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
@@ -195,10 +224,10 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
       child: _isLoading && _program == null
           ? Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(child: Text('Error: $_errorMessage'))
-              : _program == null
-                  ? Center(child: Text('Program not found'))
-                  : _buildProgramContent(),
+          ? Center(child: Text('Error: $_errorMessage'))
+          : _program == null
+          ? Center(child: Text('Program not found'))
+          : _buildProgramContent(),
     );
   }
 
@@ -224,11 +253,43 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
         Column(
           children: [
             ProgramInfoCard(program: _program!),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  DropdownButton<String>(
+                    value: _filterCriteria,
+                    onChanged: _onFilterChanged,
+                    items: <String>['All', 'Cardio', 'Strength', 'Flexibility']
+                        .map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Search Exercises',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value; // Update search query
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Expanded(
               child: ListView.builder(
-                itemCount: _program!.exercises.length,
+                itemCount: _getFilteredExercises().length,
                 itemBuilder: (context, index) {
-                  final exercise = _program!.exercises[index];
+                  final exercise = _getFilteredExercises()[index];
                   return ExerciseListItem(
                     exercise: {
                       ...exercise,
@@ -248,9 +309,7 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                           extra: {
                             'exerciseId': apiId,
                             'programId': widget.programId,
-
-                          }
-                          );
+                          });
                     },
                   );
                 },
