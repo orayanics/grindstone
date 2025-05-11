@@ -4,7 +4,6 @@ import 'package:grindstone/core/model/exercise_program.dart';
 import 'package:grindstone/core/services/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
-
 import 'package:uuid/uuid.dart';
 
 class ProgramService with ChangeNotifier {
@@ -74,17 +73,15 @@ class ProgramService with ChangeNotifier {
     notifyListeners();
   }
 
-  
-
   String? getLastUpdated(String programId) {
     return _programsLastUpdated[programId];
   }
 
   /// handle crud with try-catch
   Future<T?> _executeWithErrorHandling<T>(
-    Future<T?> Function() operation,
-    String errorPrefix,
-  ) async {
+      Future<T?> Function() operation,
+      String errorPrefix,
+      ) async {
     if (!_isAuthenticated()) {
       _setError('User not authenticated');
       return null;
@@ -107,7 +104,7 @@ class ProgramService with ChangeNotifier {
 
     try {
       final doc =
-          await _firestore.collection('exercisePrograms').doc(programId).get();
+      await _firestore.collection('exercisePrograms').doc(programId).get();
       if (!doc.exists) return false;
 
       final data = doc.data();
@@ -133,7 +130,7 @@ class ProgramService with ChangeNotifier {
           .where('userId', isEqualTo: currentUserId)
           .snapshots()
           .listen(
-        (snapshot) {
+            (snapshot) {
           final programs = snapshot.docs
               .map((doc) => ExerciseProgram.fromMap(doc.data()))
               .toList();
@@ -175,44 +172,44 @@ class ProgramService with ChangeNotifier {
       print('Failed to update lastUpdated field: $e');
     }
   }
+
   Future<bool> createProgram(ExerciseProgram program) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return false;
 
     return await _executeWithErrorHandling<bool>(
           () async {
-            // add id to program.exercises
-            final exercises = program.exercises.map((exercise) {
-              return {
-                ...exercise,
-                'id': Uuid().v4(),
-              };
-            }).toList();
+        // add id to program.exercises
+        final exercises = program.exercises.map((exercise) {
+          return {
+            ...exercise,
+            'id': Uuid().v4(),
+          };
+        }).toList();
 
-            program = ExerciseProgram(
-              id: Uuid().v4(),
-              userId: currentUserId,
-              programName: program.programName,
-              dayOfExecution: program.dayOfExecution,
-              exercises: exercises,
-            );
+        program = ExerciseProgram(
+          id: Uuid().v4(),
+          userId: currentUserId,
+          programName: program.programName,
+          dayOfExecution: program.dayOfExecution,
+          exercises: exercises,
+        );
 
-            await _firestore
-                .collection('exercisePrograms')
-                .doc(program.id)
-                .set(program.toMap());
+        await _firestore
+            .collection('exercisePrograms')
+            .doc(program.id)
+            .set(program.toMap());
 
-            _programCache[program.id] = program;
+        _programCache[program.id] = program;
 
-            if (_programsSubscription == null) {
-              _programs.add(program);
-            }
+        if (_programsSubscription == null) {
+          _programs.add(program);
+        }
 
-            return true;
-          },
-          'Failed to create program',
-        ) ??
-        false;
+        return true;
+      },
+      'Failed to create program',
+    ) ?? false;
   }
 
   Future<void> fetchPrograms({
@@ -228,7 +225,7 @@ class ProgramService with ChangeNotifier {
     }
 
     await _executeWithErrorHandling<void>(
-      () async {
+          () async {
         Query query = _firestore
             .collection('exercisePrograms')
             .where('userId', isEqualTo: currentUserId)
@@ -242,7 +239,7 @@ class ProgramService with ChangeNotifier {
 
         final programs = snapshot.docs
             .map((doc) =>
-                ExerciseProgram.fromMap(doc.data() as Map<String, dynamic>))
+            ExerciseProgram.fromMap(doc.data() as Map<String, dynamic>))
             .toList();
 
         _programs = programs;
@@ -257,15 +254,15 @@ class ProgramService with ChangeNotifier {
   }
 
   Future<ExerciseProgram?> fetchProgramById(
-    String programId, {
-    bool refresh = false,
-  }) async {
+      String programId, {
+        bool refresh = false,
+      }) async {
     if (!refresh && _programCache.containsKey(programId)) {
       return _programCache[programId];
     }
 
     return await _executeWithErrorHandling<ExerciseProgram?>(
-      () async {
+          () async {
         final doc = await _firestore
             .collection('exercisePrograms')
             .doc(programId)
@@ -297,9 +294,9 @@ class ProgramService with ChangeNotifier {
   }
 
   Future<bool> addExerciseToProgram(
-    String programId,
-    List<Map<String, dynamic>> exercises,
-  ) async {
+      String programId,
+      List<Map<String, dynamic>> exercises,
+      ) async {
     if (!await _hasAccessToProgram(programId)) {
       _setError('You do not have access to this program');
       return false;
@@ -307,22 +304,21 @@ class ProgramService with ChangeNotifier {
 
     return await _executeWithErrorHandling<bool>(
           () async {
-            await _firestore
-                .collection('exercisePrograms')
-                .doc(programId)
-                .update({
-              'exercises': FieldValue.arrayUnion(exercises),
-            });
+        await _firestore
+            .collection('exercisePrograms')
+            .doc(programId)
+            .update({
+          'exercises': FieldValue.arrayUnion(exercises),
+        });
 
-            if (_programsSubscription == null) {
-              await fetchProgramById(programId, refresh: true);
-            }
+        if (_programsSubscription == null) {
+          await fetchProgramById(programId, refresh: true);
+        }
 
-            return true;
-          },
-          'Failed to add exercise',
-        ) ??
-        false;
+        return true;
+      },
+      'Failed to add exercise',
+    ) ?? false;
   }
 
   Future<bool> deleteProgram(String programId) async {
@@ -333,22 +329,21 @@ class ProgramService with ChangeNotifier {
 
     return await _executeWithErrorHandling<bool>(
           () async {
-            await _firestore
-                .collection('exercisePrograms')
-                .doc(programId)
-                .delete();
+        await _firestore
+            .collection('exercisePrograms')
+            .doc(programId)
+            .delete();
 
-            _programCache.remove(programId);
+        _programCache.remove(programId);
 
-            if (_programsSubscription == null) {
-              _programs.removeWhere((program) => program.id == programId);
-            }
+        if (_programsSubscription == null) {
+          _programs.removeWhere((program) => program.id == programId);
+        }
 
-            return true;
-          },
-          'Failed to delete program',
-        ) ??
-        false;
+        return true;
+      },
+      'Failed to delete program',
+    ) ?? false;
   }
 
   Future<bool> deleteExercise(String programId, String exerciseId) async {
@@ -359,42 +354,41 @@ class ProgramService with ChangeNotifier {
 
     return await _executeWithErrorHandling<bool>(
           () async {
-            final doc = await _firestore
-                .collection('exercisePrograms')
-                .doc(programId)
-                .get();
+        final doc = await _firestore
+            .collection('exercisePrograms')
+            .doc(programId)
+            .get();
 
-            if (!doc.exists) {
-              throw Exception('Program not found');
-            }
+        if (!doc.exists) {
+          throw Exception('Program not found');
+        }
 
-            final data = doc.data();
-            if (data == null || data['exercises'] == null) {
-              throw Exception('No exercises found in the program');
-            }
+        final data = doc.data();
+        if (data == null || data['exercises'] == null) {
+          throw Exception('No exercises found in the program');
+        }
 
-            final exercises =
-                List<Map<String, dynamic>>.from(data['exercises']);
-            final updatedExercises = exercises.where((exercise) {
-              return exercise['exerciseId'] != exerciseId;
-            }).toList();
+        final exercises =
+        List<Map<String, dynamic>>.from(data['exercises']);
+        final updatedExercises = exercises.where((exercise) {
+          return exercise['exerciseId'] != exerciseId;
+        }).toList();
 
-            await _firestore
-                .collection('exercisePrograms')
-                .doc(programId)
-                .update({
-              'exercises': updatedExercises,
-            });
+        await _firestore
+            .collection('exercisePrograms')
+            .doc(programId)
+            .update({
+          'exercises': updatedExercises,
+        });
 
-            if (_programsSubscription == null) {
-              await fetchProgramById(programId, refresh: true);
-            }
+        if (_programsSubscription == null) {
+          await fetchProgramById(programId, refresh: true);
+        }
 
-            return true;
-          },
-          'Failed to delete exercise',
-        ) ??
-        false;
+        return true;
+      },
+      'Failed to delete exercise',
+    ) ?? false;
   }
 
   Future<void> refreshPrograms() async {
@@ -414,39 +408,22 @@ class ProgramService with ChangeNotifier {
     if (currentUserId == null) return null;
 
     try {
-      // Query Firestore to get programs sorted by lastUpdated in descending order
       final snapshot = await _firestore
           .collection('exercisePrograms')
-          .where('userId', isEqualTo: currentUserId)  // Ensure you pass the current user's ID here
-          .orderBy('lastUpdated', descending: true)  // Order by lastUpdated in descending order
-          .limit(1)  // Limit to the most recent program
+          .where('userId', isEqualTo: currentUserId)
+          .orderBy('lastUpdated', descending: true)
+          .limit(1)
           .get();
 
-
-      if (snapshot.docs.isEmpty) {
+      final mostRecentProgramDoc = snapshot.docs.firstOrNull;
+      if (mostRecentProgramDoc == null) {
         return null;
       }
 
-      final doc = snapshot.docs.first;
-      final data = doc.data();
-      final exercises = List<Map<String, dynamic>>.from(data['exercises'] ?? []);
-
-      return {
-        'id': doc.id,
-        'programName': data['programName'],
-        'dayOfExecution': data['dayOfExecution'],
-        'exercises': exercises,
-        'lastUpdated': data['lastUpdated'],
-      };
-
+      return mostRecentProgramDoc.data();
     } catch (e) {
-      print('Error fetching most recent exercise: $e');
+      _setError('Failed to fetch most recent exercise: $e');
       return null;
     }
   }
-
-
-
-
-
 }
