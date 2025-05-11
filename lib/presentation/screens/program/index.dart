@@ -59,7 +59,8 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
     final authService = Provider.of<AuthService>(context, listen: false);
 
     if (authService.isAuthenticated()) {
-      final programService = Provider.of<ProgramService>(context, listen: false);
+      final programService =
+      Provider.of<ProgramService>(context, listen: false);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         programService.startProgramsListener();
       });
@@ -99,7 +100,8 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
 
     final int totalPages = (filteredPrograms.length / _itemsPerPage).ceil();
     final int startIndex = (_currentPage - 1) * _itemsPerPage;
-    final int endIndex = (_currentPage * _itemsPerPage).clamp(0, filteredPrograms.length);
+    final int endIndex =
+    (_currentPage * _itemsPerPage).clamp(0, filteredPrograms.length);
     final paginatedPrograms = filteredPrograms.sublist(
       startIndex,
       endIndex,
@@ -116,10 +118,13 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshPrograms,
-                child: programService.isLoading && programService.programs.isEmpty
+                child: programService.isLoading &&
+                    programService.programs.isEmpty
                     ? const Center(child: CircularProgressIndicator())
                     : programService.errorMessage != null
-                    ? Center(child: Text('Error: ${programService.errorMessage}'))
+                    ? Center(
+                    child:
+                    Text('Error: ${programService.errorMessage}'))
                     : filteredPrograms.isEmpty
                     ? Center(
                   child: Column(
@@ -131,7 +136,8 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
                       const SizedBox(height: 16),
                       if (_searchQuery.isEmpty)
                         ElevatedButton(
-                          onPressed: () => context.go(AppRoutes.createProgram),
+                          onPressed: () =>
+                              context.go(AppRoutes.createProgram),
                           child: const Text('Create New Program'),
                         ),
                     ],
@@ -143,7 +149,8 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
                       child: ListView.builder(
                         itemCount: paginatedPrograms.length,
                         itemBuilder: (context, index) {
-                          final program = paginatedPrograms[index];
+                          final program =
+                          paginatedPrograms[index];
                           return Card(
                             elevation: 0,
                             margin: const EdgeInsets.only(
@@ -161,8 +168,10 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: white,
-                                  border: Border.all(color: Colors.transparent),
-                                  borderRadius: BorderRadius.circular(16.0),
+                                  border: Border.all(
+                                      color: Colors.transparent),
+                                  borderRadius:
+                                  BorderRadius.circular(16.0),
                                   boxShadow: const [
                                     BoxShadow(
                                       color: Colors.black12,
@@ -171,126 +180,92 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
                                     ),
                                   ],
                                 ),
-                                padding: const EdgeInsets.all(16.0),
+                                padding:
+                                const EdgeInsets.all(16.0),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                      MainAxisAlignment
+                                          .spaceBetween,
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment
+                                          .center,
                                       children: [
                                         Text(
                                           program.programName,
-                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            fontWeight: FontWeight.bold,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                            fontWeight:
+                                            FontWeight
+                                                .bold,
                                           ),
                                         ),
-                                        Text(
-                                          program.dayOfExecution,
-                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            color: textLight,
-                                          ),
+                                        Row(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment
+                                              .center,
+                                          children: [
+                                            Icon(
+                                              Icons
+                                                  .calendar_today_rounded,
+                                              color: black,
+                                              size: 16,
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              program
+                                                  .dayOfExecution,
+                                              style: Theme.of(
+                                                  context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                fontSize: 12,
+                                                fontWeight:
+                                                FontWeight
+                                                    .bold,
+                                                color: black,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 8.0),
                                     SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
+                                      scrollDirection:
+                                      Axis.horizontal,
                                       child: Wrap(
                                         spacing: 8,
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(
+                                            padding:
+                                            const EdgeInsets
+                                                .symmetric(
                                               horizontal: 12.0,
                                               vertical: 8.0,
                                             ),
-                                            decoration: BoxDecoration(
+                                            decoration:
+                                            BoxDecoration(
                                               color: accentRed,
-                                              borderRadius: BorderRadius.circular(12.0),
+                                              borderRadius:
+                                              BorderRadius
+                                                  .circular(
+                                                  12.0),
                                             ),
                                             child: Text(
-                                              'Day: ${program.dayOfExecution}',
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              'Exercises: ${program.exercises.length}',
+                                              style: Theme.of(
+                                                  context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
                                                 color: white,
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12.0,
-                                              vertical: 8.0,
-                                            ),
-                                          ],
-                                        ),
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  program.programName,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyMedium
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                ),
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Icon(
-                                                      Icons
-                                                          .calendar_today_rounded,
-                                                      color: black,
-                                                      size: 16,
-                                                    ),
-                                                    SizedBox(width: 4),
-                                                    Text(
-                                                      program.dayOfExecution,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodySmall
-                                                          ?.copyWith(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: black,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                )
-                                              ],
-                                            ),
-                                            SizedBox(height: 8.0),
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 12.0,
-                                                vertical: 8.0,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: accentRed,
-                                                borderRadius:
-                                                    BorderRadius.circular(12.0),
-                                              ),
-                                              child: Text(
-                                                'Exercises: ${program.exercises.length}',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall
-                                                    ?.copyWith(
-                                                      color: white,
-                                                    ),
-
                                               ),
                                             ),
                                           ),
@@ -308,9 +283,11 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
                     // Pagination controls
                     if (totalPages > 1)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment:
+                          MainAxisAlignment.center,
                           children: [
                             IconButton(
                               icon: const Icon(Icons.arrow_back),
@@ -322,9 +299,11 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
                               }
                                   : null,
                             ),
-                            Text('Page $_currentPage of $totalPages'),
+                            Text(
+                                'Page $_currentPage of $totalPages'),
                             IconButton(
-                              icon: const Icon(Icons.arrow_forward),
+                              icon:
+                              const Icon(Icons.arrow_forward),
                               onPressed: _currentPage < totalPages
                                   ? () {
                                 setState(() {
