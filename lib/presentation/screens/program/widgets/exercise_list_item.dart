@@ -56,6 +56,7 @@ class _ExerciseListItemState extends State<ExerciseListItem> {
   }
 
   Widget _buildOutlinedText(String text) {
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
@@ -105,6 +106,7 @@ class _ExerciseListItemState extends State<ExerciseListItem> {
                           _reps != '' &&
                           _rir != '' &&
                           _action != '') ...[
+
                         _buildOutlinedText(_weight),
                         const SizedBox(width: 8.0),
                         _buildOutlinedText(_reps),
@@ -123,6 +125,7 @@ class _ExerciseListItemState extends State<ExerciseListItem> {
                         const Text("No logs available"),
                     ],
                   ),
+
                 ),
               ],
             ),
