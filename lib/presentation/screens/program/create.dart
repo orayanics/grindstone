@@ -158,7 +158,7 @@ class _CreateProgramViewState extends State<CreateProgramView> {
                 placeholder: 'Program Name',
                 isRequired: true,
                 isPrimary: false,
-                isAlphanumeric: true,
+                isAlphanumeric: false,
               ),
               SizedBox(height: 16),
               // Day of execution dropdown

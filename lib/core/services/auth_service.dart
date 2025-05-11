@@ -31,11 +31,11 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> signup(
-    SignupData currentUser,
-  ) async {
+      SignupData currentUser,
+      ) async {
     try {
       final UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
+      await _auth.createUserWithEmailAndPassword(
         email: currentUser.email,
         password: currentUser.password,
       );
@@ -88,7 +88,7 @@ class AuthService extends ChangeNotifier {
 
     try {
       final UserCredential userCredential =
-          await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -153,5 +153,31 @@ class AuthService extends ChangeNotifier {
 
   bool isAuthenticated() {
     return isSignedIn && _userProvider.isAuthenticated();
+  }
+
+
+  Future<void> updatePassword({
+    required String newPassword,
+    required BuildContext context,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+
+      if (user == null) {
+        FailToast.show("No user is signed in");
+        return;
+      }
+
+      await user.updatePassword(newPassword);
+      SuccessToast.show("Password updated successfully");
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        FailToast.show("Please re-authenticate to change your password.");
+      } else {
+        FailToast.show(e.message ?? "Something went wrong");
+      }
+    } catch (e) {
+      FailToast.show("Unexpected error: ${e.toString()}");
+    }
   }
 }
