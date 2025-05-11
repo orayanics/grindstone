@@ -42,25 +42,21 @@ class _ExerciseListItemState extends State<ExerciseListItem> {
         _reps = '${latestLog.reps} reps';
         _rir = '${latestLog.rir} RIR';
         _action = latestLog.action;
-        _actionIcon = _action == 'Increase'
-            ? Icons.arrow_upward
-            : _action == 'Decrease'
-                ? Icons.arrow_downward
-                : Icons.drag_handle;
-      });
-    } else {
-      setState(() {
-        _weight = '';
-        _reps = '';
-        _rir = '';
-        _action = '';
-        _actionIcon = null;
+
+        // Determine the icon based on the action
+        if (_action == 'Increase') {
+          _actionIcon = Icons.arrow_upward;
+        } else if (_action == 'Decrease') {
+          _actionIcon = Icons.arrow_downward;
+        } else if (_action == 'Maintain') {
+          _actionIcon = Icons.drag_handle; // Represents "="
+        }
       });
     }
   }
 
-  Widget _buildOutlinedText(String? text) {
-    final displayText = (text == null || text.isEmpty) ? 'No logs yet' : text;
+  Widget _buildOutlinedText(String text) {
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
@@ -68,7 +64,7 @@ class _ExerciseListItemState extends State<ExerciseListItem> {
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Text(
-        displayText,
+        text,
         style: const TextStyle(color: Colors.red),
       ),
     );
@@ -99,18 +95,18 @@ class _ExerciseListItemState extends State<ExerciseListItem> {
           ),
           child: ListTile(
             title: Text(widget.exercise['name'] ?? 'Unnamed Exercise'),
-            subtitle: (_weight.isEmpty &&
-                    _reps.isEmpty &&
-                    _rir.isEmpty &&
-                    _action.isEmpty)
-                ? Text(
-                    'No logs yet',
-                    style: const TextStyle(color: Colors.red),
-                  )
-                : SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: <Widget>[
+                      if (_weight != '' &&
+                          _reps != '' &&
+                          _rir != '' &&
+                          _action != '') ...[
+
                         _buildOutlinedText(_weight),
                         const SizedBox(width: 8.0),
                         _buildOutlinedText(_reps),
@@ -125,9 +121,14 @@ class _ExerciseListItemState extends State<ExerciseListItem> {
                             style: const TextStyle(color: Colors.red),
                           ),
                         ],
-                      ],
-                    ),
+                      ] else
+                        const Text("No logs available"),
+                    ],
                   ),
+
+                ),
+              ],
+            ),
             leading: IconButton(
               icon: const Icon(
                 Icons.delete_rounded,

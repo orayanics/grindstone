@@ -220,14 +220,77 @@ class _ProgramIndexViewState extends State<ProgramIndexView> {
                                               horizontal: 12.0,
                                               vertical: 8.0,
                                             ),
-                                            decoration: BoxDecoration(
-                                              color: accentRed,
-                                              borderRadius: BorderRadius.circular(12.0),
+                                          ],
+                                        ),
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  program.programName,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                ),
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons
+                                                          .calendar_today_rounded,
+                                                      color: black,
+                                                      size: 16,
+                                                    ),
+                                                    SizedBox(width: 4),
+                                                    Text(
+                                                      program.dayOfExecution,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall
+                                                          ?.copyWith(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: black,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                )
+                                              ],
                                             ),
-                                            child: Text(
-                                              'Exercises: ${program.exercises.length}',
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                color: white,
+                                            SizedBox(height: 8.0),
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 12.0,
+                                                vertical: 8.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: accentRed,
+                                                borderRadius:
+                                                    BorderRadius.circular(12.0),
+                                              ),
+                                              child: Text(
+                                                'Exercises: ${program.exercises.length}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: white,
+                                                    ),
+
                                               ),
                                             ),
                                           ),

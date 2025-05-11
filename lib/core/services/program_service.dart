@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:grindstone/core/exports/components.dart';
 import 'package:grindstone/core/model/exercise_program.dart';
 import 'package:grindstone/core/services/user_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -161,15 +162,14 @@ class ProgramService with ChangeNotifier {
 
   Future<void> updateLastUpdated(String programId, String newTimestamp) async {
     try {
-      final programRef = _firestore.collection('exercisePrograms').doc(programId);
+      final programRef =
+          _firestore.collection('exercisePrograms').doc(programId);
 
       await programRef.update({
         'lastUpdated': newTimestamp,
       });
-
-      print('lastUpdated field updated successfully');
     } catch (e) {
-      print('Failed to update lastUpdated field: $e');
+      FailToast.show('Failed to update lastUpdated field: $e');
     }
   }
 
@@ -304,21 +304,28 @@ class ProgramService with ChangeNotifier {
 
     return await _executeWithErrorHandling<bool>(
           () async {
-        await _firestore
-            .collection('exercisePrograms')
-            .doc(programId)
-            .update({
-          'exercises': FieldValue.arrayUnion(exercises),
-        });
 
-        if (_programsSubscription == null) {
-          await fetchProgramById(programId, refresh: true);
-        }
+            await _firestore
+                .collection('exercisePrograms')
+                .doc(programId)
+                .update({
+              'exercises': FieldValue.arrayUnion(exercises
+                  .map((exercise) => {
+                        ...exercise,
+                        'id': Uuid().v4(),
+                      })
+                  .toList()),
+            });
 
-        return true;
-      },
-      'Failed to add exercise',
-    ) ?? false;
+            if (_programsSubscription == null) {
+              await fetchProgramById(programId, refresh: true);
+            }
+
+            return true;
+          },
+          'Failed to add exercise',
+        ) ??
+        false;
   }
 
   Future<bool> deleteProgram(String programId) async {
