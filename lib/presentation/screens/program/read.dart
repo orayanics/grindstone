@@ -257,7 +257,7 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  DropdownButton<String>(
+                  /*DropdownButton<String>(
                     value: _filterCriteria,
                     onChanged: _onFilterChanged,
                     items: <String>['All', 'Cardio', 'Strength', 'Flexibility']
@@ -267,7 +267,7 @@ class _ProgramDetailsViewState extends State<ProgramDetailsView> {
                         child: Text(value),
                       );
                     }).toList(),
-                  ),
+                  ),*/
                   SizedBox(width: 16),
                   Expanded(
                     child: TextField(

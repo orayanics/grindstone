@@ -73,8 +73,9 @@ GoRouter createRouter(BuildContext context) {
         loginRoute,
       ],
       redirect: (context, state) {
-        if (authService.isAuthenticated()) {
-          return '/profile';
+        if (authService.isAuthenticated() && (state.matchedLocation == '/' || state.matchedLocation == '/register')) {
+          // Redirect authenticated users only if they are on login or register
+          return '/home';
         }
         return null;
       });
@@ -95,6 +96,7 @@ GoRouter createRouter(BuildContext context) {
       ],
       redirect: (context, state) {
         if (!authService.isAuthenticated()) {
+          // Redirect unauthenticated users to login
           return '/';
         }
         return null;
@@ -112,21 +114,18 @@ GoRouter createRouter(BuildContext context) {
       final isAuthenticated = authService.isAuthenticated();
       final isLoggingIn = state.matchedLocation == '/';
       final isRegistering = state.matchedLocation == '/register';
-      final isPublicRoute = state.matchedLocation == '/';
 
-      // if no no auth and try to access priv
-      if (!isAuthenticated &&
-          !isLoggingIn &&
-          !isRegistering &&
-          !isPublicRoute) {
+      // Redirect unauthenticated users to login
+      if (!isAuthenticated && !isLoggingIn && !isRegistering) {
         return '/';
       }
 
-      // if ok
+      // Prevent authenticated users from accessing login or register
       if (isAuthenticated && (isLoggingIn || isRegistering)) {
-        return '/profile';
+        return '/home'; // Redirect to home or another default private route
       }
 
+      // No redirection needed
       return null;
     },
     errorBuilder: (context, state) => const Scaffold(
@@ -136,8 +135,3 @@ GoRouter createRouter(BuildContext context) {
     ),
   );
 }
-
-// Also declare your routes in routes.dart
-
-//* TODO: Add Redirect Logic
-//* TODO: Clean URL

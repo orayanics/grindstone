@@ -5,6 +5,7 @@ import 'package:grindstone/core/services/program_service.dart';
 import 'package:provider/provider.dart';
 import 'package:grindstone/core/services/auth_service.dart';
 import 'package:grindstone/core/services/user_provider.dart';
+import 'package:grindstone/core/config/colors.dart';
 import 'package:uuid/uuid.dart';
 
 class UpdateProgramExercises extends StatefulWidget {
@@ -139,10 +140,11 @@ class _UpdateProgramExercisesState extends State<UpdateProgramExercises> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Dialog(
-          child: Container(
+Widget build(BuildContext context) {
+  return Center(
+    child: Dialog(
+      backgroundColor: white, // Set the background color to white
+      child: Container(
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -221,10 +223,13 @@ class _UpdateProgramExercisesState extends State<UpdateProgramExercises> {
             PrimaryButton(
               label: 'Add Exercises',
               onPressed: _addExercisesToProgram,
+              // Set the button color to accentPurple
             )
           ],
         ),
-      )),
-    );
-  }
+      ),
+    ),
+  );
 }
+}
+

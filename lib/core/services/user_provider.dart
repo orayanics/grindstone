@@ -62,6 +62,66 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  Future<void> updatePersonalDetails({
+    required String firstName,
+    required String lastName,
+  }) async {
+    try {
+      final userId = getUid();
+      if (userId.isEmpty) throw Exception("User ID is not available");
+
+      // Update Firestore
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'firstName': firstName,
+        'lastName': lastName,
+      });
+
+      // Update local state
+      await setUserProfile(
+        firstName: firstName,
+        lastName: lastName,
+        age: _age ?? 0,
+        height: _height ?? 0.0,
+        weight: _weight ?? 0.0,
+      );
+
+      notifyListeners();
+    } catch (e) {
+      throw Exception("Failed to update personal details: $e");
+    }
+  }
+
+  Future<void> updateHealthDetails({
+    required double weight,
+    required double height,
+    required int age,
+  }) async {
+    try {
+      final userId = getUid();
+      if (userId.isEmpty) throw Exception("User ID is not available");
+
+      // Update Firestore
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'weight': weight,
+        'height': height,
+        'age': age,
+      });
+
+      // Update local state
+      await setUserProfile(
+        firstName: _firstName ?? '',
+        lastName: _lastName ?? '',
+        age: age,
+        height: height,
+        weight: weight,
+      );
+
+      notifyListeners();
+    } catch (e) {
+      throw Exception("Failed to update health details: $e");
+    }
+  }
+
   Future<void> _fetchUserProfileData(String uid) async {
     try {
       final userDoc =

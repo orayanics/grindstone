@@ -4,11 +4,13 @@ import 'package:grindstone/core/config/colors.dart';
 class PrimaryButton extends StatelessWidget {
   final dynamic label;
   final VoidCallback onPressed;
+  final Color? color;
 
   const PrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
+    this.color,
   });
 
   @override
