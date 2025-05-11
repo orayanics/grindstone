@@ -46,3 +46,6 @@ app.*.map.json
 
 # ENV
 *.env
+pubspec.lock
+pubspec.lock
+*.lock

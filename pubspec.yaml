@@ -10,9 +10,19 @@ dependencies:
   flutter:
     sdk: flutter
   go_router: ^14.8.1
-  fluttertoast: ^8.0.8
+  fluttertoast: ^8.2.12
   provider: ^6.1.2
   flutter_dotenv: ^5.2.1
+  firebase_core: ^3.12.1
+  firebase_auth: ^5.5.1
+  firebase_auth_web: ^5.14.1
+  cloud_firestore: ^5.6.5
+  cloud_firestore_web: ^4.4.5
+  http: ^0.13.3
+  uuid: ^3.0.4
+  shared_preferences: ^2.5.3
+  flutter_svg: ^2.0.9
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:
@@ -21,6 +31,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-assets:
-  - .env
+  assets:
+    - assets/.env
+    - assets/logo/gGreen.svg
+    - assets/logo/gPurple.svg
+    - assets/logo/gGreen.png
+    - assets/logo/gPurple.png
